@@ -24,6 +24,13 @@ Outputs:
 Usage:
     python src/train_gru.py            # full training (GPU recommended)
     python src/train_gru.py --quick    # smoke test: 10% of train patients, 1 epoch
+
+Experiment options (results go to results/gru_<tag>, models/gru_<tag>):
+    --seq-len 144        12 h of history instead of 6 h
+    --t2d-weight 2       count T2D patients' rows twice as much in the loss
+    --hypo-weight 3      count hypoglycaemia positives 3x (rare event)
+    --oracle-meals       DIAGNOSTIC ONLY: give the model every meal with its true carbs
+                         (not available in real life) to measure how much unlogged meals cost
 """
 from __future__ import annotations
 
@@ -85,7 +92,7 @@ def img(fig) -> str:
 # --------------------------------------------------------------------------
 # Data
 # --------------------------------------------------------------------------
-def build_sequences(device):
+def build_sequences(device, oracle_meals=False):
     """(patients, T, 11) float16 tensor on the device + patient order."""
     pids, cgm = load_stream(W / "cgm.parquet", ["glucose_mgdl"])
     _, vit = load_stream(W / "vitals.parquet", ["heart_rate_bpm", "steps", "sleep_stage"])
@@ -94,14 +101,19 @@ def build_sequences(device):
     g, hr, st, asleep = cgm["glucose_mgdl"], vit["heart_rate_bpm"], vit["steps"], vit["sleep_stage"]
 
     ev = pd.read_csv(W / "events.csv", parse_dates=["timestamp"],
-                     usecols=["patient_id", "timestamp", "event_type", "logged", "logged_carbs_g", "duration_min"])
-    ev = ev[ev.logged.astype(bool)]
+                     usecols=["patient_id", "timestamp", "event_type", "logged", "carbs_g", "logged_carbs_g", "duration_min"])
+    ev["logged"] = ev.logged.astype(bool)
     ev["bin"] = ((ev.timestamp - START) / pd.Timedelta(minutes=STEP)).astype(int)
     ev = ev[(ev.bin >= 0) & (ev.bin < T)]
     ev["r"] = ev.patient_id.map(row)
     carbs = np.zeros((n, T), np.float32)
-    meals = ev[ev.event_type == "meal"]
-    np.add.at(carbs, (meals.r.to_numpy(), meals.bin.to_numpy()), meals.logged_carbs_g.fillna(0).to_numpy())
+    if oracle_meals:   # every meal, true carbs (hidden simulator truth)
+        meals = ev[ev.event_type == "meal"]
+        np.add.at(carbs, (meals.r.to_numpy(), meals.bin.to_numpy()), meals.carbs_g.fillna(0).to_numpy())
+    else:              # only what the patient logged, with their estimate
+        meals = ev[(ev.event_type == "meal") & ev.logged]
+        np.add.at(carbs, (meals.r.to_numpy(), meals.bin.to_numpy()), meals.logged_carbs_g.fillna(0).to_numpy())
+    ev = ev[ev.logged]
     dose = np.zeros((n, T), np.float32)
     meds = ev[ev.event_type == "medication"]
     np.add.at(dose, (meds.r.to_numpy(), meds.bin.to_numpy()), 1.0)
@@ -132,7 +144,6 @@ def load_rows(pids, quick):
     row = {p: i for i, p in enumerate(pids)}
     df["p_idx"] = df.patient_id.map(row).astype(np.int64)
     df["t_idx"] = ((df.timestamp - START) / pd.Timedelta(minutes=STEP)).astype(np.int64)
-    assert (df.t_idx >= SEQ_LEN - 1).all()
     return df.reset_index(drop=True)
 
 
@@ -143,7 +154,8 @@ def to_tensors(df, mean, std, device):
     y_reg = ((df[REG].to_numpy(np.float32) - df[["g_now"]].to_numpy(np.float32)) / REG_SCALE)
     return {"p": torch.from_numpy(df.p_idx.to_numpy()).to(device), "t": torch.from_numpy(df.t_idx.to_numpy()).to(device),
             "x": torch.from_numpy(x).to(device, torch.float16),
-            "yc": torch.from_numpy(y_cls).to(device), "yr": torch.from_numpy(y_reg).to(device)}
+            "yc": torch.from_numpy(y_cls).to(device), "yr": torch.from_numpy(y_reg).to(device),
+            "t2d": torch.from_numpy((df.cohort.to_numpy() == 2).astype(np.float32)).to(device)}
 
 
 # --------------------------------------------------------------------------
@@ -169,20 +181,29 @@ class TwinGRU(nn.Module):
 
 def batch_seq(seq_all, p, t):
     offsets = torch.arange(-SEQ_LEN + 1, 1, device=t.device)
-    return seq_all[p[:, None], t[:, None] + offsets]          # (B, 72, C)
+    return seq_all[p[:, None], (t[:, None] + offsets).clamp(min=0)]   # (B, SEQ_LEN, C)
 
 
-def loss_fn(logits, reg, yc, yr, reg_weight):
+def loss_fn(logits, reg, yc, yr, t2d, cfg):
+    """Masked multi-task loss with optional T2D-row and hypo-positive weighting."""
+    w_row = 1 + (cfg["t2d_weight"] - 1) * t2d                        # (B,)
     m = ~torch.isnan(yc)
-    bce = F.binary_cross_entropy_with_logits(logits[m], yc[m]) if m.any() else logits.sum() * 0
+    y = torch.nan_to_num(yc)
+    w = w_row[:, None].expand_as(y).clone()
+    w[:, 2] = w[:, 2] * torch.where(y[:, 2] > 0.5, cfg["hypo_weight"], 1.0)
+    bce = F.binary_cross_entropy_with_logits(logits, y, reduction="none")
+    bce = (bce * w * m).sum() / (w * m).sum().clamp(min=1)
     mr = ~torch.isnan(yr)
-    hub = F.huber_loss(reg[mr], yr[mr], delta=0.6) if mr.any() else reg.sum() * 0
-    return bce + reg_weight * hub
+    hub = F.huber_loss(reg, torch.nan_to_num(yr), delta=0.6, reduction="none")
+    wr = w_row[:, None].expand_as(hub)
+    hub = (hub * wr * mr).sum() / (wr * mr).sum().clamp(min=1)
+    return bce + cfg["reg_weight"] * hub
 
 
 @torch.no_grad()
-def predict(model, seq_all, data, batch=8192):
+def predict(model, seq_all, data, batch=None):
     model.eval()
+    batch = batch or max(1024, 8192 * 72 // SEQ_LEN)   # keep GPU memory flat for long histories
     outs_c, outs_r = [], []
     for i in range(0, len(data["p"]), batch):
         sl = slice(i, i + batch)
@@ -196,7 +217,12 @@ def predict(model, seq_all, data, batch=8192):
 # --------------------------------------------------------------------------
 # Main
 # --------------------------------------------------------------------------
-def main(quick):
+def main(args):
+    global SEQ_LEN, MODELS, RESULTS
+    quick = args.quick
+    SEQ_LEN = args.seq_len
+    if args.tag:
+        MODELS, RESULTS = MODELS.parent / f"gru_{args.tag}", RESULTS.parent / f"gru_{args.tag}"
     t_start = time.time()
     torch.manual_seed(42)
     np.random.seed(42)
@@ -205,7 +231,7 @@ def main(quick):
     MODELS.mkdir(parents=True, exist_ok=True)
     RESULTS.mkdir(parents=True, exist_ok=True)
 
-    pids, seq_all = build_sequences(device)
+    pids, seq_all = build_sequences(device, args.oracle_meals)
     log(f"Sequences on {device}: {tuple(seq_all.shape)} ({seq_all.element_size() * seq_all.nelement() / 1e9:.2f} GB)")
     df = load_rows(pids, quick)
     tr_df, va_df, te_df = (df[df.split == s].reset_index(drop=True) for s in ("train", "val", "test"))
@@ -216,7 +242,8 @@ def main(quick):
     tr, va, te = (to_tensors(d, mean, std, device) for d in (tr_df, va_df, te_df))
     log(f"Rows: train {len(tr_df):,} / val {len(va_df):,} / test {len(te_df):,}")
 
-    cfg = dict(CFG)
+    cfg = dict(CFG, seq_len=SEQ_LEN, t2d_weight=args.t2d_weight, hypo_weight=args.hypo_weight,
+               oracle_meals=args.oracle_meals, tag=args.tag)
     if quick:
         cfg.update(epochs=1, patience=1)
     model = TwinGRU(seq_all.shape[2], len(STATIC), cfg).to(device)
@@ -237,7 +264,7 @@ def main(quick):
             idx = perm[b * cfg["batch"]:(b + 1) * cfg["batch"]]
             with torch.autocast("cuda", dtype=torch.float16, enabled=device.type == "cuda"):
                 c, r = model(batch_seq(seq_all, tr["p"][idx], tr["t"][idx]), tr["x"][idx])
-            loss = loss_fn(c.float(), r.float(), tr["yc"][idx], tr["yr"][idx], cfg["reg_weight"])
+            loss = loss_fn(c.float(), r.float(), tr["yc"][idx], tr["yr"][idx], tr["t2d"][idx], cfg)
             opt.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
             scaler.unscale_(opt)
@@ -355,4 +382,9 @@ table{{border-collapse:collapse;width:100%;margin:12px 0}} td,th{{border-bottom:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--quick", action="store_true")
-    main(ap.parse_args().quick)
+    ap.add_argument("--seq-len", type=int, default=72, help="history length in 5-min steps (72 = 6 h)")
+    ap.add_argument("--t2d-weight", type=float, default=1.0)
+    ap.add_argument("--hypo-weight", type=float, default=1.0)
+    ap.add_argument("--oracle-meals", action="store_true", help="diagnostic: true carbs for every meal")
+    ap.add_argument("--tag", default="", help="experiment name for output folders")
+    main(ap.parse_args())

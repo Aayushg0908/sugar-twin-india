@@ -6,10 +6,12 @@ Reports AUROC / AUPRC for every alert (all patients and T2D only) and forecast M
 plus how often the two models agree on an alert.
 
 Usage:
-    python src/compare_models.py   # -> results/comparison.html, results/comparison.json
+    python src/compare_models.py                    # GRU from results/gru -> results/comparison.html/json
+    python src/compare_models.py --gru gru_improved # use another GRU experiment -> results/comparison_gru_improved.*
 """
 from __future__ import annotations
 
+import argparse
 import base64
 import io
 import json
@@ -36,9 +38,10 @@ def img(fig):
     return f'<img src="data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}">'
 
 
-def main():
+def main(gru_dir):
     lgb = pd.read_parquet(RES / "lightgbm" / "test_predictions.parquet")
-    gru = pd.read_parquet(RES / "gru" / "test_predictions.parquet")
+    gru = pd.read_parquet(RES / gru_dir / "test_predictions.parquet")
+    suffix = "" if gru_dir == "gru" else f"_{gru_dir}"
     keys = ["patient_id", "timestamp"]
     pred_cols = [c for c in gru.columns if c.startswith(("p_", "pred_"))]
     df = lgb.merge(gru[keys + pred_cols], on=keys, suffixes=("_lgb", "_gru"))
@@ -79,12 +82,12 @@ def main():
         fc_rows.append(f"<tr><td>{name[2:]} min</td>" + "".join(
             f"<td>{out[name][k]['mae']:.1f} / {out[name][k]['mae_t2d']:.1f}</td>" for k in ("LightGBM", "GRU", "Ensemble")) + "</tr>")
 
-    (RES / "comparison.json").write_text(json.dumps(out, indent=2, default=float))
+    (RES / f"comparison{suffix}.json").write_text(json.dumps(out, indent=2, default=float))
     html = f"""<!doctype html><html><head><meta charset="utf-8"><title>Model Comparison</title>
 <style>body{{font-family:system-ui,Segoe UI,sans-serif;max-width:1100px;margin:32px auto;padding:0 16px;color:#1e293b}}
 table{{border-collapse:collapse;width:100%;margin:12px 0}} td,th{{border-bottom:1px solid #e2e8f0;padding:6px 8px;text-align:left}}
 .muted{{color:#64748b}} img{{max-width:100%}}</style></head><body>
-<h1>LightGBM vs GRU vs Ensemble</h1>
+<h1>LightGBM vs GRU ({gru_dir}) vs Ensemble</h1>
 <p class="muted">{len(df):,} prediction points from {df.patient_id.nunique()} held-out test patients.
 Ensemble = plain average of the two models (no tuning on test data).</p>
 <h2>Alerts (next 2 h)</h2>
@@ -92,15 +95,17 @@ Ensemble = plain average of the two models (no tuning on test data).</p>
 <h2>Forecast MAE, mg/dL (all / T2D)</h2>
 <table><tr><th>Horizon</th><th>LightGBM</th><th>GRU</th><th>Ensemble</th></tr>{''.join(fc_rows)}</table>
 {''.join(charts)}</body></html>"""
-    (RES / "comparison.html").write_text(html, encoding="utf-8")
+    (RES / f"comparison{suffix}.html").write_text(html, encoding="utf-8")
 
     for name in ALERTS:
         print(name.ljust(7), " | ".join(f"{k}: AUROC {v['auroc']:.3f} (T2D {v['auroc_t2d']:.3f}) AUPRC {v['auprc']:.3f}"
                                          for k, v in out[name].items() if isinstance(v, dict)))
     for name in FORECASTS:
         print(name.ljust(7), " | ".join(f"{k}: MAE {v['mae']:.1f} (T2D {v['mae_t2d']:.1f})" for k, v in out[name].items()))
-    print(f"Report -> {RES / 'comparison.html'}")
+    print(f"Report -> {RES / f'comparison{suffix}.html'}")
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--gru", default="gru", help="folder under results/ with the GRU test predictions")
+    main(ap.parse_args().gru)
