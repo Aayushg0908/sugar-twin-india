@@ -91,23 +91,73 @@ python src/train_lightgbm.py
 ```
 Close Chrome and other heavy apps first. This overwrites the step 7 results, so **send those back first**.
 
-## 8. Send the results back
-These are the files Aayush needs:
+## 8. After training: test the models before pushing
+Do all four checks below. Push only if every one passes.
+
+> 📦 **About the model files:** LightGBM saves trained models as **`.txt` files** (its native format), not `.pkl`.
+> This is intentional: `.txt` models load on any OS and any Python version, while `.pkl` files can break across
+> versions. So there is **no `.pkl` to push**. The `.txt` files in `models/lightgbm/` *are* the trained models.
+
+### Check 1: all files exist
+```bash
+git status
 ```
-models/lightgbm/*.txt                       (7 trained models)
-results/lightgbm/report.html                (charts + tables)
-results/lightgbm/metrics.json               (all numbers)
-results/lightgbm/feature_importance.csv
-results/lightgbm/test_predictions.parquet   (for combining with the GRU model)
+You should see these new, untracked files:
 ```
+models/lightgbm/spike.txt, severe.txt, hypo.txt, fc30.txt, fc60.txt, fc90.txt, fc120.txt   (7 models)
+results/lightgbm/report.html, metrics.json, feature_importance.csv, test_predictions.parquet
+```
+`data/model/features.parquet` must **not** appear (it's ignored on purpose).
+
+### Check 2: every model loads and predicts
+Run this from the repo folder with the venv active. It's one line and works in PowerShell and in macOS/Linux terminals:
+```bash
+python -c "import lightgbm as lgb, pandas as pd; df=pd.read_parquet('data/model/features.parquet'); te=df[df.split=='test'].head(1000); X=te.drop(columns=['patient_id','timestamp','split','y_spike','y_severe','y_hypo','g_p30','g_p60','g_p90','g_p120']); [print(n, lgb.Booster(model_file=f'models/lightgbm/{n}.txt').predict(X)[:5].round(3)) for n in ['spike','severe','hypo','fc30','fc60','fc90','fc120']]"
+```
+✅ Pass if it prints 7 lines with no error:
+- `spike`, `severe`, `hypo` → numbers **between 0 and 1** (risk probabilities)
+- `fc30` … `fc120` → numbers roughly **between -100 and +150** (predicted *change* in glucose, mg/dL)
+
+### Check 3: the results make sense
+```bash
+python -c "import json; m=json.load(open('results/lightgbm/metrics.json')); print('quick mode:', m['run']['quick']); [print(k, 'AUROC', round(m[k]['auroc'],3), '| trend rule', round(m[k]['baseline_trend_auroc'],3)) for k in ['spike','severe','hypo']]; [print(k, 'MAE', round(m[k]['mae'],1), '| persistence', round(m[k]['baseline_persistence_mae'],1), '| Clarke A+B', round(m[k]['clarke_zones_pct']['A']+m[k]['clarke_zones_pct']['B'],1)) for k in ['fc30','fc60','fc90','fc120']]"
+```
+✅ Pass if **all** of these are true:
+| Check | Expected |
+|---|---|
+| `quick mode` | `False`. If `True`, these are smoke-test results: rerun step 7 |
+| Every AUROC | **Higher** than its trend-rule AUROC, and between about **0.70 and 0.98** |
+| Every MAE | **Lower** than its persistence MAE |
+| Clarke A+B | Above about **95%** |
+
+⚠️ If any AUROC is **above 0.99**, something is probably leaking future information. Don't push; send Aayush the output.
+
+### Check 4: read the report
+Open `results/lightgbm/report.html` in a browser. The tables should have numbers (no blanks or `nan`), and the charts should show
+ROC curves above the diagonal and forecast points clustered along the diagonal line of the Clarke grid.
+
+## 9. Push the results
+Only after all four checks pass.
+
 **Option A, if you've been added as a collaborator on GitHub:**
 ```bash
+git pull
 git checkout -b lightgbm-results
 git add models/lightgbm results/lightgbm
+git status
 git commit -m "LightGBM training results"
 git push -u origin lightgbm-results
 ```
-**Option B:** zip the `models/lightgbm` and `results/lightgbm` folders and send the zip (Google Drive / WhatsApp / email).
+`git status` should list only files under `models/lightgbm/` and `results/lightgbm/`. If anything else appears, unstage it with
+`git restore --staged <file>` before committing. Then tell Aayush the branch `lightgbm-results` is pushed.
+
+> If the push fails with "file exceeds GitHub's file size limit" (100 MB), it's almost certainly
+> `test_predictions.parquet`. Remove it with `git rm --cached results/lightgbm/test_predictions.parquet`,
+> commit and push again, and send that one file separately (Option B).
+
+**Option B, if you can't push:** zip the `models/lightgbm` and `results/lightgbm` folders and send the zip (Google Drive / WhatsApp / email).
+
+If you also run the optional 15-min training afterwards, repeat steps 8 and 9 on a new branch, e.g. `lightgbm-results-15min`.
 
 ---
 
