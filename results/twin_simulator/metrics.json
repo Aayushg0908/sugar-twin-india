@@ -1,0 +1,101 @@
+{
+  "patients_fitted": 5000,
+  "patients_total": 5000,
+  "population": {
+    "tau": 55.0,
+    "p10": 8.272740002529607,
+    "w": 1.0
+  },
+  "cohort_priors": {
+    "Normoglycemic": {
+      "tau_raw": 35.0,
+      "p10_raw": 4.25
+    },
+    "Prediabetes": {
+      "tau_raw": 50.0,
+      "p10_raw": 6.36
+    },
+    "T2D": {
+      "tau_raw": 65.0,
+      "p10_raw": 10.23
+    }
+  },
+  "shrinkage": {
+    "k_scores_train": {
+      "0": 25.587761711553398,
+      "2": 25.229177419609588,
+      "4": 25.06413373911307,
+      "8": 24.959194490400947,
+      "16": 25.000280125889514,
+      "32": 25.163139765206413
+    },
+    "best_k": 8
+  },
+  "week2_test_comparison": {
+    "population": {
+      "peak_rise_mae": 31.327991909565533,
+      "curve_mae": 20.997013063560885,
+      "peak_rise_mae_by_cohort": {
+        "Normoglycemic": 20.99,
+        "Prediabetes": 17.61,
+        "T2D": 39.28
+      }
+    },
+    "cohort_average": {
+      "peak_rise_mae": 26.211299928324827,
+      "curve_mae": 17.58494426250802,
+      "peak_rise_mae_by_cohort": {
+        "Normoglycemic": 14.17,
+        "Prediabetes": 18.53,
+        "T2D": 32.74
+      }
+    },
+    "personal_raw": {
+      "peak_rise_mae": 25.923628798525627,
+      "curve_mae": 17.88651399245866,
+      "peak_rise_mae_by_cohort": {
+        "Normoglycemic": 14.14,
+        "Prediabetes": 19.01,
+        "T2D": 32.12
+      }
+    },
+    "personal_shrunk": {
+      "peak_rise_mae": 25.352972430833535,
+      "curve_mae": 17.282120753470725,
+      "peak_rise_mae_by_cohort": {
+        "Normoglycemic": 13.9,
+        "Prediabetes": 18.34,
+        "T2D": 31.47
+      }
+    }
+  },
+  "walk_fitted_from_own_data": 2020,
+  "week2_meals_test_patients": 9316,
+  "week2_peak_rise_mae": {
+    "personalized": 25.352972430833535,
+    "population": 31.327991909565533
+  },
+  "week2_curve_mae": {
+    "personalized": 17.282120753470725,
+    "population": 20.997013063560885
+  },
+  "week2_peak_rise_mae_by_cohort": {
+    "Normoglycemic": {
+      "pers_err": 13.9,
+      "pop_err": 21.0
+    },
+    "Prediabetes": {
+      "pers_err": 18.3,
+      "pop_err": 17.6
+    },
+    "T2D": {
+      "pers_err": 31.5,
+      "pop_err": 39.3
+    }
+  },
+  "recovery_correlation": {
+    "tau": 0.7141152616864983,
+    "p10": 0.9206602766971431
+  },
+  "minutes": 14.9
+}
