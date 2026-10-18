@@ -3,11 +3,11 @@ import type { Risk, Snapshot, Suggestion } from "../api";
 import { Pill, TrendIcon, glucoseColor, glucoseWord, levelStyle, trendWord } from "../ui";
 
 const LEVEL_WORD = { high: "Likely", medium: "Possible", low: "Unlikely", now: "Happening now" };
-const BAR = { high: "bg-red-500", medium: "bg-amber-400", low: "bg-emerald-500", now: "bg-violet-500" };
+const BAR = { high: "bg-red-500", medium: "bg-amber-400", low: "bg-green-500", now: "bg-blue-500" };
 
 export function CurrentGlucose({ snap }: { snap: Snapshot }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4">
+    <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-4">
       <div className={glucoseColor(snap.glucose)}>
         <div className="flex items-end gap-1">
           <span className="text-5xl font-extrabold leading-none">{snap.glucose ?? "–"}</span>
@@ -32,7 +32,7 @@ function RiskCard({ icon, title, risk, what, nowText, extra }: {
   const width = Math.min(100, (risk.p / Math.max(risk.threshold * 1.6, 0.01)) * 100);
   const urgent = risk.level === "high" || risk.level === "now";
   return (
-    <div className={`rounded-2xl p-3.5 ring-1 ring-inset ${urgent ? "bg-red-50 ring-red-200" : "bg-white ring-slate-200"}`}>
+    <div className={`rounded-xl p-3.5 ring-1 ring-inset ${urgent ? "bg-red-50 ring-red-200" : "bg-white ring-slate-200"}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-bold text-slate-800">{icon}{title}</div>
         <Pill className={levelStyle[risk.level]}>{LEVEL_WORD[risk.level]}</Pill>
@@ -88,10 +88,10 @@ export function Suggestions({ items, onTry }: { items: Suggestion[]; onTry: (s: 
     <ul className="space-y-2">
       {items.map((s) => (
         <li key={s.action} className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-          <Lightbulb className={`h-5 w-5 shrink-0 ${s.kind === "raise" ? "text-blue-500" : s.kind === "info" ? "text-slate-400" : "text-amber-500"}`} />
+          <Lightbulb className={`h-5 w-5 shrink-0 ${s.kind === "raise" ? "text-blue-500" : s.kind === "info" ? "text-slate-400" : "text-brand-600"}`} />
           <div className="flex-1 text-sm text-slate-700">{s.action}</div>
           {s.effect != null && (
-            <span className={`whitespace-nowrap text-sm font-bold ${s.kind === "raise" ? "text-blue-600" : "text-emerald-600"}`}>
+            <span className={`whitespace-nowrap text-sm font-bold ${s.kind === "raise" ? "text-blue-600" : "text-green-600"}`}>
               {s.effect > 0 ? "+" : ""}{Math.round(s.effect)} mg/dL {s.kind === "lower" ? "peak" : ""}
             </span>
           )}

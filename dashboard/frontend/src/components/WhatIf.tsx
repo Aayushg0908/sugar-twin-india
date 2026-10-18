@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Footprints, Pill as PillIcon, RotateCcw, UtensilsCrossed } from "lucide-react";
 import { api, isoNaive, type Change, type WhatIfResult } from "../api";
-import { COLORS, hhmm } from "../ui";
+import { hhmm } from "../ui";
 import { useChartTheme } from "../theme";
 
 export interface WhatIfState {
@@ -85,7 +85,7 @@ export default function WhatIf({ pid, time, drugClasses, state, setState }: {
           <div className="mb-2 flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (
               <button key={p.label} onClick={() => set(p.v)}
-                className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100">{p.label}</button>
+                className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-100 hover:bg-brand-100">{p.label}</button>
             ))}
           </div>
           <Slider label="Carbohydrates" value={state.meal_carbs} min={0} max={150} step={5} unit="g" onChange={(v) => set({ meal_carbs: v })} />
@@ -132,18 +132,18 @@ export default function WhatIf({ pid, time, drugClasses, state, setState }: {
 
       <div>
         <div className="mb-3 grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-slate-50 p-3">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Highest glucose</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] font-medium text-slate-400">Highest glucose</div>
             <div className="text-lg font-bold text-slate-800">{s ? Math.round(s.scenario.peak) : "–"} <span className="text-xs font-medium text-slate-400">mg/dL</span></div>
-            {active && s && <div className={`text-xs font-semibold ${dPeak > 0 ? "text-red-600" : "text-emerald-600"}`}>{dPeak > 0 ? "+" : ""}{Math.round(dPeak)} vs {cmpLabel}</div>}
+            {active && s && <div className={`text-xs font-semibold ${dPeak > 0 ? "text-red-600" : "text-green-600"}`}>{dPeak > 0 ? "+" : ""}{Math.round(dPeak)} vs {cmpLabel}</div>}
           </div>
-          <div className="rounded-xl bg-slate-50 p-3">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Time above 180</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] font-medium text-slate-400">Time above 180</div>
             <div className="text-lg font-bold text-slate-800">{s ? s.scenario.min_above_180 : "–"} <span className="text-xs font-medium text-slate-400">min</span></div>
             {active && cmp && <div className="text-xs text-slate-500">{cmp.min_above_180} min with {cmpLabel}</div>}
           </div>
-          <div className="rounded-xl bg-slate-50 p-3">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Time below 70</div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="text-[11px] font-medium text-slate-400">Time below 70</div>
             <div className="text-lg font-bold text-slate-800">{s ? s.scenario.min_below_70 : "–"} <span className="text-xs font-medium text-slate-400">min</span></div>
             {active && cmp && <div className="text-xs text-slate-500">{cmp.min_below_70} min with {cmpLabel}</div>}
           </div>
@@ -152,11 +152,11 @@ export default function WhatIf({ pid, time, drugClasses, state, setState }: {
           {res && (
             <ResponsiveContainer>
               <LineChart data={res.curve} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
-                <CartesianGrid stroke={th.grid} vertical={false} />
-                <ReferenceArea y1={70} y2={180} fill={COLORS.inRange} fillOpacity={0.07} />
-                <ReferenceLine y={180} stroke={COLORS.high} strokeDasharray="4 4" />
-                <ReferenceLine y={70} stroke={COLORS.low} strokeDasharray="4 4" />
-                <ReferenceLine x={res.curve[24]?.t} stroke={th.grid} label={{ value: "2 h", fontSize: 10, fill: "#94a3b8", position: "top" }} />
+                <CartesianGrid stroke={th.grid} strokeDasharray="2 4" vertical={false} />
+                <ReferenceArea y1={70} y2={180} fill={th.inRange} fillOpacity={0.07} />
+                <ReferenceLine y={180} stroke={th.high} strokeDasharray="4 4" />
+                <ReferenceLine y={70} stroke={th.low} strokeDasharray="4 4" />
+                <ReferenceLine x={res.curve[24]?.t} stroke={th.grid} label={{ value: "2 h", fontSize: 10, fill: th.muted, position: "top" }} />
                 <XAxis dataKey="t" type="number" domain={["dataMin", "dataMax"]} tickFormatter={hhmm} scale="time"
                   ticks={res.curve.filter((_, i) => i % 6 === 0).map((c) => c.t)} />
                 <YAxis domain={[40, yMax]} ticks={[70, 180, 250]} width={48} />
@@ -164,16 +164,16 @@ export default function WhatIf({ pid, time, drugClasses, state, setState }: {
                   formatter={(v: number, n: string) => [`${Math.round(v)} mg/dL`, n === "base" ? "If nothing changes" : n === "reference" ? (state.refLabel ?? "Reference") : "With your changes"]}
                   contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
                 <Line dataKey="base" stroke={th.base} strokeWidth={2} strokeDasharray="5 4" dot={false} isAnimationActive={false} />
-                {s?.reference && <Line dataKey="reference" stroke="#d97706" strokeWidth={2} strokeDasharray="2 3" dot={false} isAnimationActive={false} />}
-                <Line dataKey="scenario" stroke={COLORS.brand} strokeWidth={3} dot={false} isAnimationActive={false} />
+                {s?.reference && <Line dataKey="reference" stroke={th.forecast} strokeWidth={2} strokeDasharray="2 3" dot={false} isAnimationActive={false} />}
+                <Line dataKey="scenario" stroke={th.brand} strokeWidth={3} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           )}
         </div>
         <div className="mt-1 flex flex-wrap gap-4 text-xs text-slate-500">
           <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 border-t-2 border-dashed border-slate-400" />If nothing changes (ML forecast)</span>
-          {s?.reference && <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 border-t-2 border-dotted border-amber-600" />{state.refLabel}</span>}
-          <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-teal-600" />With these changes (this patient's twin)</span>
+          {s?.reference && <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 border-t-2 border-dotted border-blue-600" />{state.refLabel}</span>}
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-brand-600" />With these changes (this patient's twin)</span>
         </div>
         <p className="mt-2 text-[11px] leading-snug text-slate-400">
           The first 2 h come from the ML forecast; the twin adds the effect of each change using this patient's own physiology.

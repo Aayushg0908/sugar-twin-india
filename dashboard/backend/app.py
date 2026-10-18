@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import sys
 from contextlib import asynccontextmanager
+from math import erf, sqrt
 from pathlib import Path
 
 import lightgbm as lgb
@@ -79,6 +80,8 @@ class Store:
                       "Diastolic blood pressure", "Body weight", "Triglycerides"]
         labs = pd.concat([labs[labs.patient_id.isin(ids)], new["labs"]])
         self.labs = labs[labs.test.isin(keep_tests)]
+        gen = pd.concat([pd.read_csv(EHR / "genetics.csv"), pd.read_csv(NEW / "genetics.csv")])
+        self.genetics = gen[gen.patient_id.isin(ids | {DEMO_ID})].set_index("patient_id")
         demo_last = new["labs"].sort_values("date").groupby("test").value.last()
         self.demo_hba1c = float(demo_last.get("HbA1c", np.nan))
 
@@ -398,7 +401,31 @@ def summary(pid: str):
                  "recovery_hours": round(recovery_minutes(tau, p10, w) / 60, 1),
                  "pop_recovery_hours": round(recovery_minutes(*pop) / 60, 1)},
         "flags": clinical_flags(pid, g, bands, cv, act),
+        "genetics": genetics(pid),
     }
+
+
+# T2D risk variants in genetics.csv (column prefix -> what the gene does), same SNPs as src/generate_ehr.py
+SNP_INFO = [
+    ("TCF7L2_rs7903146_T", "TCF7L2", "rs7903146", "T", "Strongest known type 2 diabetes gene: lowers insulin release"),
+    ("FTO_rs9939609_A", "FTO", "rs9939609", "A", "Linked to higher body weight and obesity"),
+    ("KCNQ1_rs2237892_C", "KCNQ1", "rs2237892", "C", "Lowers insulin release; a major risk gene in Asian populations"),
+    ("SLC30A8_rs13266634_C", "SLC30A8", "rs13266634", "C", "Affects how the pancreas packages insulin"),
+]
+
+
+def genetics(pid):
+    """Risk-allele counts for the four T2D variants plus the polygenic risk score, or None if not recorded."""
+    if pid not in store.genetics.index:
+        return None
+    r = store.genetics.loc[pid]
+    z = r.get("polygenic_risk_score_z")
+    z = float(z) if pd.notna(z) else None
+    return {"variants": [{"gene": gene, "rsid": rsid, "risk_allele": allele, "copies": int(r[f"{col}_count"]), "role": role}
+                         for col, gene, rsid, allele, role in SNP_INFO],
+            "prs_z": z,
+            # share of the population with a lower score (standard normal)
+            "prs_percentile": None if z is None else round(float(0.5 * (1 + erf(z / sqrt(2)))) * 100)}
 
 
 def recovery_minutes(tau, p10, w):

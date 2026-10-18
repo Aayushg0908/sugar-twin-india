@@ -94,6 +94,13 @@ export interface Summary {
     pop_recovery_hours: number;
   };
   flags: Finding[];
+  genetics?: Genetics | null;
+}
+
+export interface Genetics {
+  variants: { gene: string; rsid: string; risk_allele: string; copies: number; role: string }[];
+  prs_z: number | null;
+  prs_percentile: number | null;
 }
 
 export interface Reason {

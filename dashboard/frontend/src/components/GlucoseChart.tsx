@@ -3,7 +3,7 @@ import {
   Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import type { Snapshot } from "../api";
-import { COLORS, hhmm } from "../ui";
+import { hhmm } from "../ui";
 import { useChartTheme } from "../theme";
 
 type Pt = { t: number; g?: number | null; fc?: number; band?: [number, number]; actual?: number | null };
@@ -40,11 +40,11 @@ export default function GlucoseChart({ snap, reveal }: { snap: Snapshot; reveal:
     <div className="h-[340px] w-full">
       <ResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 22, right: 18, bottom: 0, left: -12 }}>
-          <CartesianGrid stroke={th.grid} vertical={false} />
-          <ReferenceArea y1={70} y2={180} fill={COLORS.inRange} fillOpacity={0.07} />
-          <ReferenceArea x1={now} x2={end} fill="#7c3aed" fillOpacity={0.035} />
-          <ReferenceLine y={180} stroke={COLORS.high} strokeDasharray="4 4" strokeOpacity={0.7} />
-          <ReferenceLine y={70} stroke={COLORS.low} strokeDasharray="4 4" strokeOpacity={0.7} />
+          <CartesianGrid stroke={th.grid} strokeDasharray="2 4" vertical={false} />
+          <ReferenceArea y1={70} y2={180} fill={th.inRange} fillOpacity={0.07} />
+          <ReferenceArea x1={now} x2={end} fill={th.forecast} fillOpacity={0.04} />
+          <ReferenceLine y={180} stroke={th.high} strokeDasharray="4 4" strokeOpacity={0.7} />
+          <ReferenceLine y={70} stroke={th.low} strokeDasharray="4 4" strokeOpacity={0.7} />
           <ReferenceLine x={now} stroke={th.now} strokeWidth={1.5}
             label={{ value: "Now", position: "top", fill: th.now, fontSize: 11, fontWeight: 700 }} />
           <XAxis dataKey="t" type="number" domain={[start, end]} ticks={ticks} tickFormatter={hhmm} scale="time" />
@@ -58,9 +58,9 @@ export default function GlucoseChart({ snap, reveal }: { snap: Snapshot; reveal:
             }}
             contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }}
           />
-          <Area dataKey="band" stroke="none" fill={COLORS.forecast} fillOpacity={0.12} isAnimationActive={false} connectNulls />
+          <Area dataKey="band" stroke="none" fill={th.forecast} fillOpacity={0.12} isAnimationActive={false} connectNulls />
           <Line dataKey="g" stroke={th.ink} strokeWidth={2.2} dot={false} isAnimationActive={false} connectNulls={false} />
-          <Line dataKey="fc" stroke={COLORS.forecast} strokeWidth={2.5} strokeDasharray="6 4" dot={false} isAnimationActive={false} connectNulls />
+          <Line dataKey="fc" stroke={th.forecast} strokeWidth={2.5} strokeDasharray="6 4" dot={false} isAnimationActive={false} connectNulls />
           {reveal && <Line dataKey="actual" stroke={th.actual} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
 
           {meals.map((e) => (
@@ -77,13 +77,13 @@ export default function GlucoseChart({ snap, reveal }: { snap: Snapshot; reveal:
             <ReferenceDot key={`d${e.t}${e.label}`} x={e.t} y={yMax - 12} r={6}
               shape={(p: { cx?: number; cy?: number }) => (
                 <g style={{ cursor: "help" }}>
-                  <circle cx={p.cx} cy={p.cy} r={6} fill={e.logged ? "#16a34a" : "#dc2626"} stroke={th.surface} strokeWidth={1.5} />
+                  <circle cx={p.cx} cy={p.cy} r={6} fill={e.logged ? th.inRange : th.low} stroke={th.surface} strokeWidth={1.5} />
                   <title>{`${e.label} at ${hhmm(e.t)}: ${e.logged ? "confirmed in app" : "not confirmed"}`}</title>
                 </g>
               )} />
           ))}
           {walks.map((e) => (
-            <ReferenceArea key={`w${e.t}`} x1={e.t} x2={e.t + (e.minutes ?? 20) * 60e3} y1={40} y2={60} fill="#0ea5e9" fillOpacity={0.35} />
+            <ReferenceArea key={`w${e.t}`} x1={e.t} x2={e.t + (e.minutes ?? 20) * 60e3} y1={40} y2={60} fill={th.activity} fillOpacity={0.3} />
           ))}
         </ComposedChart>
       </ResponsiveContainer>
@@ -99,12 +99,12 @@ export function ChartLegend({ reveal }: { reveal: boolean }) {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
       <span className="text-slate-400">Hover a marker for details ·</span>
       {item(<span className="h-0.5 w-5 bg-slate-700" />, "Measured (CGM)")}
-      {item(<span className="h-3 w-5 rounded border-t-2 border-dashed border-violet-600 bg-violet-200" />, "Forecast + likely range")}
+      {item(<span className="h-3 w-5 rounded border-t-2 border-dashed border-blue-600 bg-blue-200" />, "Forecast + likely range")}
       {reveal && item(<span className="h-0.5 w-5 bg-slate-400" />, "What really happened")}
       {item(<span className="h-3 w-5 rounded bg-green-100" />, "Target 70–180")}
-      {item(<span className="h-3 w-3 rounded-full border border-amber-600 bg-amber-100" />, "Meal (g carbs)")}
+      {item(<span className="h-3 w-3 rounded-full border border-blue-600 bg-blue-100" />, "Meal (g carbs)")}
       {item(<><span className="h-2.5 w-2.5 rounded-full bg-green-600" /><span className="-ml-1 h-2.5 w-2.5 rounded-full bg-red-600" /></>, "Dose confirmed / not confirmed")}
-      {item(<span className="h-3 w-5 rounded bg-sky-300" />, "Exercise")}
+      {item(<span className="h-3 w-5 rounded bg-blue-300" />, "Exercise")}
     </div>
   );
 }

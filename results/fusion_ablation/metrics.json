@@ -1,0 +1,188 @@
+{
+  "feature_groups": {
+    "cgm": [
+      "g_now",
+      "g_delta_15",
+      "g_delta_30",
+      "g_delta_60",
+      "g_delta_120",
+      "g_accel_15",
+      "g_mean_1h",
+      "g_std_1h",
+      "g_max_1h",
+      "g_min_1h",
+      "g_mean_3h",
+      "g_std_3h",
+      "g_max_3h",
+      "g_min_3h",
+      "g_mean_6h",
+      "g_std_6h",
+      "g_max_6h",
+      "g_min_6h",
+      "g_tir_6h",
+      "g_tar_6h",
+      "g_coverage_6h",
+      "g_mean_24h",
+      "g_cv_24h",
+      "min_since_above_180",
+      "min_since_below_70",
+      "prof_glucose_tod",
+      "prof_future_max_tod",
+      "prof_spike_rate_tod",
+      "g_vs_profile",
+      "g_same_time_yesterday"
+    ],
+    "time": [
+      "hour",
+      "hour_sin",
+      "hour_cos",
+      "weekend"
+    ],
+    "smartwatch": [
+      "hr_15m",
+      "hr_1h",
+      "steps_30m",
+      "steps_1h",
+      "steps_3h",
+      "asleep_now",
+      "min_since_sleep",
+      "sleep_hours_last_night",
+      "hrv_last_night",
+      "sleep_eff_last_night",
+      "resting_hr_last_night",
+      "steps_yesterday",
+      "hr_vs_resting",
+      "min_since_exercise",
+      "exercise_min_3h"
+    ],
+    "app_logs": [
+      "min_since_meal",
+      "last_meal_carbs",
+      "last_meal_gi",
+      "carbs_1h",
+      "carbs_3h",
+      "carbs_today",
+      "min_since_dose_logged",
+      "doses_logged_today"
+    ],
+    "ehr": [
+      "age",
+      "bmi",
+      "waist_cm",
+      "diabetes_duration_yrs",
+      "last_hba1c",
+      "hba1c_mean",
+      "hba1c_change",
+      "last_fasting_plasma_glucose",
+      "last_post_prandial_glucose_2h",
+      "last_egfr_ckd_epi_2021",
+      "last_urine_albumin_creatinine_ratio",
+      "last_ldl_cholesterol",
+      "last_hdl_cholesterol",
+      "last_triglycerides",
+      "last_systolic_blood_pressure",
+      "last_alt",
+      "n_glucose_drugs",
+      "polygenic_risk_score_z",
+      "TCF7L2_rs7903146_T_count",
+      "on_biguanide",
+      "on_sulfonylurea",
+      "on_dpp4_inhibitor",
+      "on_sglt2_inhibitor",
+      "on_basal_insulin",
+      "on_statin",
+      "on_arb",
+      "dx_I10",
+      "dx_N18",
+      "dx_E66",
+      "dx_K76",
+      "dx_I25",
+      "dx_E78",
+      "sex",
+      "cohort",
+      "setting",
+      "activity_level",
+      "smoking",
+      "staple",
+      "diet",
+      "prescribed_doses_per_day"
+    ]
+  },
+  "cgm_only": {
+    "n_features": 34,
+    "spike": {
+      "auroc": 0.9517526488063972,
+      "auprc": 0.8433607377793904,
+      "auroc_t2d": 0.9153822546135298,
+      "auprc_t2d": 0.874727423517624
+    },
+    "hypo": {
+      "auroc": 0.9756665363766747,
+      "auprc": 0.4556114331070623,
+      "auroc_t2d": 0.9874635764139075,
+      "auprc_t2d": 0.4667176655940806
+    },
+    "fc60": {
+      "mae": 14.795469516321239,
+      "mae_t2d": 17.702573859246918
+    }
+  },
+  "cgm_wearable": {
+    "n_features": 57,
+    "spike": {
+      "auroc": 0.9545272719734658,
+      "auprc": 0.853928830129873,
+      "auroc_t2d": 0.9194129824483877,
+      "auprc_t2d": 0.8830676429452194
+    },
+    "hypo": {
+      "auroc": 0.9763388688607753,
+      "auprc": 0.45391270087091684,
+      "auroc_t2d": 0.9877257038428766,
+      "auprc_t2d": 0.46141241234929187
+    },
+    "fc60": {
+      "mae": 14.083103664007265,
+      "mae_t2d": 16.8333513309777
+    }
+  },
+  "cgm_ehr": {
+    "n_features": 74,
+    "spike": {
+      "auroc": 0.9533429113629823,
+      "auprc": 0.8478256268303992,
+      "auroc_t2d": 0.9173389541214019,
+      "auprc_t2d": 0.8777338191359902
+    },
+    "hypo": {
+      "auroc": 0.9755908821926536,
+      "auprc": 0.4447498735147126,
+      "auroc_t2d": 0.9876546065311617,
+      "auprc_t2d": 0.4521913223358871
+    },
+    "fc60": {
+      "mae": 14.571338867057491,
+      "mae_t2d": 17.424955626029863
+    }
+  },
+  "full_fusion": {
+    "n_features": 97,
+    "spike": {
+      "auroc": 0.9560430469533714,
+      "auprc": 0.8581277143925558,
+      "auroc_t2d": 0.9214919200224789,
+      "auprc_t2d": 0.8859841835278018
+    },
+    "hypo": {
+      "auroc": 0.9756742420433557,
+      "auprc": 0.44567892794017455,
+      "auroc_t2d": 0.987508455090558,
+      "auprc_t2d": 0.45030394472823915
+    },
+    "fc60": {
+      "mae": 13.943958823376894,
+      "mae_t2d": 16.653058451899263
+    }
+  },
+  "minutes": 25.7
+}

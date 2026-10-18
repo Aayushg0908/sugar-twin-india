@@ -3,72 +3,132 @@
 /* dark mode is driven by a "dark" class on <html> (see theme.tsx) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+  Clinical colour roles (validated with the dataviz palette checker, light and dark):
+    red    critical / actionable only (lows, above 250, urgent): a cool crimson, never pure red
+    amber  caution only (180-250, "spike likely", HbA1c 7-8%): muted
+    green  normal range, on target, improving
+    brand  (teal) navigation, buttons, focus, twin actions
+    blue   informational data: forecast line, meals, simulated clock
+    slate  neutrals: charcoal text on white cards over a soft grey page (no tint)
+  No other hues are used. Pure black / pure white are avoided (eye strain on long shifts).
+*/
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-900: #134e4a;
+
+  --color-white: #ffffff;
+  --color-panel: #fafafa; /* top bar + patient list */
+  --color-slate-50: #f6f6f7;
+  --color-slate-100: #efeff1;
+  --color-slate-200: #e4e4e7;
+  --color-slate-300: #d1d1d6;
+  --color-slate-400: #71717a;
+  --color-slate-500: #5f5f68;
+  --color-slate-600: #4b4b53;
+  --color-slate-700: #3a3a40;
+  --color-slate-800: #27272a;
+  --color-slate-900: #18181b;
+
+  --color-red-50: #fde7ec;
+  --color-red-100: #fad2dc;
+  --color-red-200: #e9a2b4;
+  --color-red-300: #e29aac;
+  --color-red-400: #d46a85;
+  --color-red-500: #c23b5e;
+  --color-red-600: #ad3454;
+  --color-red-700: #8a2140;
+  --color-red-800: #6e1a33;
+
+  --color-amber-50: #fdf2d2;
+  --color-amber-100: #f9e4a8;
+  --color-amber-200: #e2c160;
+  --color-amber-300: #dfc068;
+  --color-amber-400: #cca23a;
+  --color-amber-500: #b8860b;
+  --color-amber-600: #9e730a;
+  --color-amber-700: #7a5606;
+  --color-amber-800: #5e4205;
+
+  --color-green-50: #dff4e8;
+  --color-green-100: #c3ead5;
+  --color-green-200: #94d4b2;
+  --color-green-300: #84c8a6;
+  --color-green-400: #55b085;
+  --color-green-500: #2e9a6a;
+  --color-green-600: #26875c;
+  --color-green-700: #196a43;
+  --color-green-800: #135536;
+
+  --color-blue-50: #e0edfa;
+  --color-blue-100: #c7def4;
+  --color-blue-200: #9fc4ea;
+  --color-blue-300: #8cb9de;
+  --color-blue-500: #3b84bf;
+  --color-blue-600: #2d76ad;
+  --color-blue-700: #1d5788;
+
+  --color-brand-50: #d9f0f1;
+  --color-brand-100: #b0dde1;
+  --color-brand-500: #23909a;
+  --color-brand-600: #1d7b84;
+  --color-brand-700: #125e65;
+  --color-brand-900: #11484d;
 }
 
 /*
   Dark theme: re-map the palette instead of sprinkling dark: classes everywhere.
-  - "white" becomes the card surface and the slate scale is inverted (text gets lighter, panels darker)
-  - pale status tints (…-50/100/200) become translucent glows, and deep text shades (…-600/700/800) become light
+  - "white" becomes a soft charcoal card and the slate scale is inverted (text lighter, panels darker)
+  - pale status tints (…-50/100/200) become translucent washes, and deep text shades (…-600/700/800) become light
 */
 .dark {
   color-scheme: dark;
-  --color-white: #111a2e;
-  --color-slate-50: #17223a;
-  --color-slate-100: #1e2a44;
-  --color-slate-200: #2b3a57;
-  --color-slate-300: #475569;
-  --color-slate-400: #8b9ab3;
-  --color-slate-500: #a3b1c6;
-  --color-slate-600: #c3cfdf;
-  --color-slate-700: #dbe3ee;
-  --color-slate-800: #eef2f7;
-  --color-slate-900: #f8fafc;
+  --color-white: #131315;
+  --color-panel: #0c0c0e;
+  --color-slate-50: #1a1a1d;
+  --color-slate-100: #202024;
+  --color-slate-200: #26262a;
+  --color-slate-300: #3f3f46;
+  --color-slate-400: #8b8b94;
+  --color-slate-500: #a1a1aa;
+  --color-slate-600: #c4c4cb;
+  --color-slate-700: #dcdce0;
+  --color-slate-800: #ededef;
+  --color-slate-900: #f7f7f8;
 
-  --color-red-50: rgb(239 68 68 / 0.12);
-  --color-red-100: rgb(239 68 68 / 0.18);
-  --color-red-200: rgb(239 68 68 / 0.35);
-  --color-red-600: #f87171;
-  --color-red-700: #fca5a5;
-  --color-red-800: #fecaca;
-  --color-amber-50: rgb(245 158 11 / 0.12);
-  --color-amber-100: rgb(245 158 11 / 0.2);
-  --color-amber-200: rgb(245 158 11 / 0.35);
-  --color-amber-600: #fbbf24;
-  --color-amber-700: #fcd34d;
-  --color-amber-800: #fde68a;
-  --color-emerald-50: rgb(16 185 129 / 0.12);
-  --color-emerald-200: rgb(16 185 129 / 0.35);
-  --color-emerald-600: #34d399;
-  --color-emerald-700: #6ee7b7;
-  --color-green-100: rgb(34 197 94 / 0.25);
-  --color-green-600: #4ade80;
-  --color-blue-50: rgb(59 130 246 / 0.14);
-  --color-blue-200: rgb(59 130 246 / 0.35);
-  --color-blue-600: #60a5fa;
-  --color-blue-700: #93c5fd;
-  --color-violet-50: rgb(139 92 246 / 0.14);
-  --color-violet-100: rgb(139 92 246 / 0.22);
-  --color-violet-200: rgb(139 92 246 / 0.35);
-  --color-violet-600: #a78bfa;
-  --color-violet-700: #c4b5fd;
-  --color-rose-50: rgb(244 63 94 / 0.12);
-  --color-rose-200: rgb(244 63 94 / 0.35);
-  --color-rose-700: #fda4af;
-  --color-orange-50: rgb(249 115 22 / 0.12);
-  --color-orange-200: rgb(249 115 22 / 0.35);
-  --color-orange-600: #fb923c;
-  --color-orange-700: #fdba74;
-  --color-brand-50: rgb(20 184 166 / 0.12);
-  --color-brand-100: rgb(20 184 166 / 0.22);
-  --color-brand-700: #5eead4;
+  --color-red-50: rgb(232 90 125 / 0.2);
+  --color-red-100: rgb(232 90 125 / 0.3);
+  --color-red-200: rgb(232 90 125 / 0.6);
+  --color-red-500: #d0607c;
+  --color-red-600: #f07a96;
+  --color-red-700: #ff9cb3;
+  --color-red-800: #ffc2d0;
+  --color-amber-50: rgb(222 168 52 / 0.2);
+  --color-amber-100: rgb(222 168 52 / 0.3);
+  --color-amber-200: rgb(222 168 52 / 0.6);
+  --color-amber-400: #b5862a;
+  --color-amber-500: #c49536;
+  --color-amber-600: #e6b54e;
+  --color-amber-700: #f5c862;
+  --color-amber-800: #fbdc93;
+  --color-green-50: rgb(64 196 136 / 0.2);
+  --color-green-100: rgb(64 196 136 / 0.3);
+  --color-green-200: rgb(64 196 136 / 0.6);
+  --color-green-500: #3a9a70;
+  --color-green-600: #4ccb92;
+  --color-green-700: #79e2b2;
+  --color-green-800: #a7efcd;
+  --color-blue-50: rgb(86 160 230 / 0.2);
+  --color-blue-100: rgb(86 160 230 / 0.3);
+  --color-blue-200: rgb(86 160 230 / 0.6);
+  --color-blue-300: #4a8cc6;
+  --color-blue-500: #4a8cc6;
+  --color-blue-600: #76b4ec;
+  --color-blue-700: #a6d0f5;
+  --color-brand-50: rgb(45 185 192 / 0.2);
+  --color-brand-100: rgb(45 185 192 / 0.45);
+  --color-brand-500: #2fa3ad;
+  --color-brand-600: #2fb3bb;
+  --color-brand-700: #6fe0e5;
 }
 
 html,
@@ -78,10 +138,12 @@ body,
 }
 
 body {
-  @apply bg-slate-100 text-slate-800 antialiased;
+  @apply text-slate-800 antialiased;
+  background: #f4f4f5; /* soft neutral grey */
+  font-variant-numeric: tabular-nums; /* glucose values don't jitter while the clock replays */
 }
 .dark body {
-  background: #0a1120;
+  background: #09090b; /* near-black page; text stays off-white to limit glare */
 }
 
 /* slim scrollbars for the patient list */
@@ -89,25 +151,29 @@ body {
   width: 6px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d4d4d8;
   border-radius: 9999px;
 }
 .dark .scroll-thin::-webkit-scrollbar-thumb {
-  background: #2b3a57;
+  background: #2a2a2e;
 }
 
 input[type="range"] {
-  accent-color: #0d9488;
+  accent-color: #1d7b84;
 }
 
 .recharts-cartesian-axis-tick-value {
   font-size: 11px;
-  fill: #64748b;
+  fill: #71717a;
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: #e4e4e7;
 }
 .dark .recharts-cartesian-axis-tick-value {
-  fill: #8b9ab3;
+  fill: #8b8b94;
 }
 .dark .recharts-cartesian-axis-line,
 .dark .recharts-cartesian-axis-tick-line {
-  stroke: #2b3a57;
+  stroke: #26262a;
 }

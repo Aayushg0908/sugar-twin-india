@@ -1,6 +1,6 @@
-import { Activity, Dna, HeartPulse, MapPin, Timer, Utensils } from "lucide-react";
+import { Activity, Dna, Droplet, HeartPulse, MapPin, Target, Timer, Utensils } from "lucide-react";
 import type { Summary } from "../api";
-import { Pill } from "../ui";
+import { Pill, StatTile } from "../ui";
 
 export function ProfileCard({ s }: { s: Summary }) {
   const hba1c = s.labs.find((l) => l.test === "HbA1c")?.value;
@@ -12,14 +12,14 @@ export function ProfileCard({ s }: { s: Summary }) {
   ];
   return (
     <div className="flex flex-wrap items-center gap-5">
-      <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-extrabold ${s.name ? "bg-violet-100 text-violet-700" : "bg-brand-100 text-brand-700"}`}>
+      <div className={`flex h-14 w-14 items-center justify-center rounded-xl text-lg font-extrabold ${s.name ? "bg-blue-100 text-blue-700" : "bg-brand-100 text-brand-700"}`}>
         {s.name ? s.name[0] : s.sex}
       </div>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-extrabold text-slate-900">{s.name ?? `Patient ${s.id}`}</h1>
           {s.name && <span className="text-sm text-slate-400">{s.id}</span>}
-          <Pill className={s.cohort === "T2D" ? "bg-rose-50 text-rose-700 ring-rose-200" : s.cohort === "Prediabetes" ? "bg-amber-50 text-amber-700 ring-amber-200" : "bg-emerald-50 text-emerald-700 ring-emerald-200"}>
+          <Pill className="bg-slate-100 text-slate-700 ring-slate-200">
             {s.cohort === "T2D" ? `Type 2 diabetes · ${Math.round(s.diabetes_years ?? 0)} yrs` : s.cohort === "Prediabetes" ? "Prediabetes" : "No diabetes"}
           </Pill>
         </div>
@@ -28,15 +28,12 @@ export function ProfileCard({ s }: { s: Summary }) {
           {facts.map((f) => <span key={f.text} className="flex items-center gap-1">{f.icon}{f.text}</span>)}
         </div>
       </div>
-      <div className="ml-auto flex gap-2">
-        <div className="rounded-xl bg-slate-50 px-4 py-2 text-center">
-          <div className="text-[11px] font-medium uppercase text-slate-400">HbA1c</div>
-          <div className={`text-xl font-extrabold ${hba1c == null ? "text-slate-400" : hba1c >= 8 ? "text-red-600" : hba1c >= 7 ? "text-amber-600" : "text-emerald-600"}`}>{hba1c ?? "–"}%</div>
-        </div>
-        <div className="rounded-xl bg-slate-50 px-4 py-2 text-center">
-          <div className="text-[11px] font-medium uppercase text-slate-400">14-day in range</div>
-          <div className="text-xl font-extrabold text-slate-800">{Math.round(s.cgm14.bands.in_range)}%</div>
-        </div>
+      <div className="ml-auto flex gap-3">
+        <StatTile className="min-w-[150px]" icon={<Droplet />} label="HbA1c" value={hba1c == null ? "–" : `${hba1c}%`}
+          tone={hba1c == null ? null : hba1c >= 8 ? "red" : hba1c >= 7 ? "amber" : "green"}
+          note={hba1c == null ? "no result" : hba1c >= 8 ? "over 8%" : hba1c >= 7 ? "above 7% target" : "on target"} />
+        <StatTile className="min-w-[150px]" icon={<Target />} label="14-day in range" value={`${Math.round(s.cgm14.bands.in_range)}%`}
+          tone={s.cgm14.bands.in_range > 70 ? "green" : "amber"} note="target over 70%" />
       </div>
     </div>
   );
@@ -44,7 +41,7 @@ export function ProfileCard({ s }: { s: Summary }) {
 
 function Meter({ label, value, sub, ratio, tone }: { label: string; value: string; sub: string; ratio: number; tone: string }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
       <div className="text-xs font-medium text-slate-500">{label}</div>
       <div className="text-lg font-bold text-slate-800">{value}</div>
       <div className="relative mt-1.5 h-1.5 rounded-full bg-slate-200">
@@ -66,12 +63,12 @@ export function TwinCard({ s }: { s: Summary }) {
     <div className="grid gap-2 sm:grid-cols-3">
       <Meter label="Sugar rise per roti (~15 g carbs)" value={`+${t.rise_per_roti} mg/dL`} sub={`${rise} (average +${t.pop_rise_per_roti})`}
         ratio={t.rise_per_roti / t.pop_rise_per_roti}
-        tone={t.carb_label === "high" ? "bg-red-500" : t.carb_label === "low" ? "bg-emerald-500" : "bg-slate-500"} />
+        tone={t.carb_label === "high" ? "bg-amber-500" : t.carb_label === "low" ? "bg-green-500" : "bg-slate-500"} />
       <Meter label="Back to normal after a meal" value={`~${t.recovery_hours} h`} sub={`${rec} (average ${t.pop_recovery_hours} h)`}
         ratio={t.recovery_hours / t.pop_recovery_hours}
-        tone={t.recovery_label === "slow" ? "bg-red-500" : t.recovery_label === "fast" ? "bg-emerald-500" : "bg-slate-500"} />
+        tone={t.recovery_label === "slow" ? "bg-amber-500" : t.recovery_label === "fast" ? "bg-green-500" : "bg-slate-500"} />
       <Meter label="Walking after meals" value={walk} sub={`${t.w.toFixed(2)}× the average effect`} ratio={t.w}
-        tone={t.walk_label === "strong" ? "bg-emerald-500" : t.walk_label === "weak" ? "bg-red-500" : "bg-slate-500"} />
+        tone={t.walk_label === "strong" ? "bg-green-500" : t.walk_label === "weak" ? "bg-amber-500" : "bg-slate-500"} />
     </div>
   );
 }

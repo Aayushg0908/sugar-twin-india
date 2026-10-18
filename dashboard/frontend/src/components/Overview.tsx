@@ -1,104 +1,17 @@
-import { Area, Bar, BarChart, CartesianGrid, ComposedChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import type { Accuracy, Summary } from "../api";
-import { COLORS, Stat, dayLabel } from "../ui";
-import { useChartTheme } from "../theme";
-
-const BANDS: { key: keyof Summary["cgm14"]["bands"]; label: string; color: string; target: string; ok: (v: number) => boolean }[] = [
-  { key: "very_high", label: "Very high >250", color: COLORS.veryHigh, target: "< 5%", ok: (v) => v < 5 },
-  { key: "high", label: "High 181–250", color: COLORS.high, target: "< 25% (with very high)", ok: () => true },
-  { key: "in_range", label: "In range 70–180", color: COLORS.inRange, target: "> 70%", ok: (v) => v > 70 },
-  { key: "low", label: "Low 54–69", color: COLORS.low, target: "< 4% (with very low)", ok: () => true },
-  { key: "very_low", label: "Very low <54", color: COLORS.veryLow, target: "< 1%", ok: (v) => v < 1 },
-];
-
-export function TimeInRange({ s }: { s: Summary }) {
-  const b = s.cgm14.bands;
-  return (
-    <div className="flex gap-4">
-      <div className="flex h-48 w-9 shrink-0 flex-col overflow-hidden rounded-lg">
-        {BANDS.map((x) => <div key={x.key} style={{ height: `${Math.max(b[x.key], 0.4)}%`, background: x.color }} title={`${x.label}: ${b[x.key]}%`} />)}
-      </div>
-      <ul className="flex h-48 flex-1 flex-col justify-between py-1">
-        {BANDS.map((x) => (
-          <li key={x.key} className="flex items-center justify-between gap-2 text-sm" title={`Target ${x.target}`}>
-            <span className="flex items-center gap-2 whitespace-nowrap"><span className="h-2.5 w-2.5 rounded-full" style={{ background: x.color }} />{x.label}</span>
-            <span className="flex items-center gap-1.5">
-              <b className="text-slate-800">{b[x.key].toFixed(1)}%</b>
-              {x.key === "in_range" || x.key === "very_high" || x.key === "very_low"
-                ? x.ok(b[x.key]) ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-red-400" />
-                : <span className="w-4" />}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export function DailyPattern({ s }: { s: Summary }) {
-  const th = useChartTheme();
-  const data = s.agp.map((a) => ({ ...a, outer: [a.p5, a.p95], inner: [a.p25, a.p75] }));
-  return (
-    <div className="h-56">
-      <ResponsiveContainer>
-        <ComposedChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -14 }}>
-          <CartesianGrid stroke={th.grid} vertical={false} />
-          <ReferenceArea y1={70} y2={180} fill={COLORS.inRange} fillOpacity={0.07} />
-          <ReferenceLine y={180} stroke={COLORS.high} strokeDasharray="4 4" />
-          <ReferenceLine y={70} stroke={COLORS.low} strokeDasharray="4 4" />
-          <XAxis dataKey="hour" ticks={[0, 4, 8, 12, 16, 20]} tickFormatter={(h) => `${h % 12 || 12}${h < 12 ? "am" : "pm"}`} />
-          <YAxis domain={[40, 350]} ticks={[70, 180, 250]} width={46} />
-          <Tooltip formatter={(v: number | number[], n: string) => [Array.isArray(v) ? `${Math.round(v[0])}–${Math.round(v[1])}` : Math.round(v),
-            n === "outer" ? "5–95% of days" : n === "inner" ? "25–75% of days" : "Typical (median)"]}
-            labelFormatter={(h) => `${h}:00 – ${h}:59`} contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
-          <Area dataKey="outer" stroke="none" fill={COLORS.brand} fillOpacity={0.12} isAnimationActive={false} />
-          <Area dataKey="inner" stroke="none" fill={COLORS.brand} fillOpacity={0.28} isAnimationActive={false} />
-          <Line dataKey="p50" stroke={COLORS.brand} strokeWidth={2.5} dot={false} isAnimationActive={false} />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-export function DailyTir({ s }: { s: Summary }) {
-  const th = useChartTheme();
-  return (
-    <div className="h-28">
-      <ResponsiveContainer>
-        <BarChart data={s.daily} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
-          <XAxis dataKey="date" tickFormatter={(d) => dayLabel(d).split(",")[0].slice(0, 2)} interval={0} />
-          <YAxis domain={[0, 100]} ticks={[70]} width={40} />
-          <ReferenceLine y={70} stroke="#94a3b8" strokeDasharray="3 3" />
-          <Tooltip formatter={(v: number) => [`${Math.round(v)}%`, "In range"]} labelFormatter={(d) => dayLabel(Number(d))}
-            contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
-          <Bar dataKey="tir" fill={COLORS.inRange} radius={[4, 4, 0, 0]} isAnimationActive={false} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-export function CgmStats({ s }: { s: Summary }) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      <Stat label="Average" value={`${Math.round(s.cgm14.mean)}`} sub="mg/dL" />
-      <Stat label="GMI (est. HbA1c)" value={`${s.cgm14.gmi.toFixed(1)}%`} sub="from CGM" />
-      <Stat label="Variability (CV)" value={`${Math.round(s.cgm14.cv)}%`} sub={s.cgm14.cv <= 36 ? "stable" : "too variable"} />
-      <Stat label="Sensor wear" value={`${Math.round(s.cgm14.coverage)}%`} sub="of 14 days" />
-    </div>
-  );
-}
+import { useChartTheme, useTheme } from "../theme";
 
 export function EhrPanel({ s }: { s: Summary }) {
-  const th = useChartTheme();
   const order = ["HbA1c", "Fasting plasma glucose", "LDL cholesterol", "Triglycerides", "eGFR (CKD-EPI 2021)", "Systolic blood pressure", "Body weight"];
   const labs = order.map((t) => s.labs.find((l) => l.test === t)).filter(Boolean) as Summary["labs"];
   const short: Record<string, string> = { "Fasting plasma glucose": "Fasting glucose", "eGFR (CKD-EPI 2021)": "eGFR (kidney)", "Systolic blood pressure": "BP (systolic)" };
   return (
+    <div className="space-y-5">
     <div className="grid gap-5 lg:grid-cols-3">
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Latest labs</h3>
+        <h3 className="mb-2 text-xs font-semibold text-slate-400">Latest labs</h3>
         <ul className="divide-y divide-slate-100 text-sm">
           {labs.map((l) => (
             <li key={l.test} className="flex justify-between py-1.5">
@@ -107,25 +20,12 @@ export function EhrPanel({ s }: { s: Summary }) {
             </li>
           ))}
         </ul>
-        {s.hba1c_history.length > 1 && (
-          <div className="mt-3 h-20">
-            <ResponsiveContainer>
-              <LineChart data={s.hba1c_history} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
-                <YAxis domain={["dataMin - 0.3", "dataMax + 0.3"]} hide />
-                <ReferenceLine y={7} stroke="#94a3b8" strokeDasharray="3 3" />
-                <Tooltip formatter={(v: number) => [`${v}%`, "HbA1c"]} labelFormatter={() => ""} contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
-                <Line dataKey="value" stroke="#e11d48" strokeWidth={2} dot={{ r: 2 }} isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-            <div className="text-center text-[11px] text-slate-400">HbA1c over the last 3 years (dashed = 7% target)</div>
-          </div>
-        )}
       </div>
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Current medicines</h3>
+        <h3 className="mb-2 text-xs font-semibold text-slate-400">Current medicines</h3>
         <ul className="space-y-1.5 text-sm">
           {s.medications.map((m) => (
-            <li key={m.drug + m.dose} className="rounded-lg bg-slate-50 px-3 py-1.5">
+            <li key={m.drug + m.dose} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
               <div className="font-semibold text-slate-800">{m.drug} <span className="font-normal text-slate-500">{m.dose}</span></div>
               <div className="text-[11px] text-slate-400">{m.class} · {m.for}</div>
             </li>
@@ -134,14 +34,98 @@ export function EhrPanel({ s }: { s: Summary }) {
         </ul>
       </div>
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Diagnoses</h3>
+        <h3 className="mb-2 text-xs font-semibold text-slate-400">Diagnoses</h3>
         <ul className="space-y-1.5 text-sm">
           {s.diagnoses.map((d) => (
-            <li key={d.code + d.name} className="flex justify-between gap-2 rounded-lg bg-slate-50 px-3 py-1.5">
+            <li key={d.code + d.name} className="flex justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
               <span className="text-slate-700">{d.name}</span><span className="text-[11px] text-slate-400">{d.code}</span>
             </li>
           ))}
         </ul>
+      </div>
+    </div>
+    {s.hba1c_history.length > 1 && <HbA1cTrend history={s.hba1c_history} />}
+    </div>
+  );
+}
+
+const fmtMonth = new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric", timeZone: "UTC" });
+const monthLabel = (ms: number) => fmtMonth.format(new Date(ms));
+
+/** HbA1c control bands (ADA): the band carries the status, the line stays neutral ink. */
+const BANDS_A1C = [
+  { from: 0, to: 7, role: "inRange", label: "On target (under 7%)" },
+  { from: 7, to: 8, role: "high", label: "Above target (7–8%)" },
+  { from: 8, to: 20, role: "low", label: "Poorly controlled (over 8%)" },
+] as const;
+const bandOf = (v: number) => BANDS_A1C.find((b) => v < b.to) ?? BANDS_A1C[2];
+
+/** HbA1c history with real axes, control bands, the 7% target and the change since the first test. */
+function HbA1cTrend({ history }: { history: Summary["hba1c_history"] }) {
+  const th = useChartTheme();
+  const bandOpacity = useTheme().theme === "dark" ? 0.18 : 0.12;   // dark surface needs stronger tints to tell bands apart
+  const pts = history.filter((h): h is { date: number; value: number } => h.value != null).sort((a, b) => a.date - b.date);
+  if (pts.length < 2) return null;
+  const first = pts[0], last = pts[pts.length - 1];
+  const change = last.value - first.value;
+  const lo = Math.floor(Math.min(6, ...pts.map((p) => p.value)) * 2) / 2 - 0.5;
+  const hi = Math.ceil(Math.max(9, ...pts.map((p) => p.value)) * 2) / 2 + 0.5;
+  const ticks: number[] = [];
+  for (let v = Math.ceil(lo); v <= hi; v += 1) ticks.push(v);
+  const band = bandOf(last.value);
+  const Arrow = change > 0.05 ? TrendingUp : change < -0.05 ? TrendingDown : Minus;
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h3 className="text-xs font-semibold text-slate-400">HbA1c trend ({pts.length} tests)</h3>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900">{last.value.toFixed(1)}%</span>
+            <span className="text-xs text-slate-500">latest, {monthLabel(last.date)}</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: th[band.role] }} />{band.label}
+          </span>
+          <span className="flex items-center gap-1 rounded-full bg-white px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200"
+            title="Lower is better">
+            <Arrow className="h-4 w-4" />
+            {change > 0 ? "+" : ""}{change.toFixed(1)} points since {monthLabel(first.date)}
+            <span className="font-normal text-slate-500">({change > 0.05 ? "worse" : change < -0.05 ? "better" : "stable"})</span>
+          </span>
+        </div>
+      </div>
+      <div className="h-56">
+        <ResponsiveContainer>
+          <LineChart data={pts} margin={{ top: 10, right: 16, bottom: 4, left: -8 }}>
+            {BANDS_A1C.map((b) => (
+              <ReferenceArea key={b.label} y1={Math.max(b.from, lo)} y2={Math.min(b.to, hi)} fill={th[b.role]} fillOpacity={bandOpacity}
+                ifOverflow="hidden" />
+            ))}
+            <CartesianGrid stroke={th.grid} strokeDasharray="2 4" vertical={false} />
+            <ReferenceLine y={7} stroke={th.inRange} strokeDasharray="5 4" strokeWidth={1.5}
+              label={{ value: "7% target", position: "insideTopLeft", fill: th.muted, fontSize: 11 }} />
+            <XAxis dataKey="date" type="number" scale="time" domain={["dataMin", "dataMax"]} tickFormatter={monthLabel}
+              ticks={pts.map((p) => p.date)} interval="preserveStartEnd" minTickGap={24} />
+            <YAxis domain={[lo, hi]} ticks={ticks} tickFormatter={(v) => `${v}%`} width={44} />
+            <Tooltip labelFormatter={(v) => monthLabel(Number(v))}
+              formatter={(v: number) => [`${v.toFixed(1)}% · ${bandOf(v).label}`, "HbA1c"]}
+              contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }}
+              cursor={{ stroke: th.muted, strokeDasharray: "3 3" }} />
+            <Line dataKey="value" stroke={th.ink} strokeWidth={2} isAnimationActive={false}
+              dot={{ r: 4, fill: th.surface, stroke: th.ink, strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: th.ink, stroke: th.surface, strokeWidth: 2 }}
+              label={(p: { x?: number; y?: number; index?: number }) => p.index === pts.length - 1
+                ? <text key="last" x={p.x} y={(p.y ?? 0) - 12} textAnchor="middle" fontSize={12} fontWeight={700} fill={th.ink}>{last.value.toFixed(1)}%</text>
+                : <g key={p.index} />} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+        {BANDS_A1C.map((b) => (
+          <span key={b.label} className="flex items-center gap-1.5"><span className="h-3 w-4 rounded-sm" style={{ background: th[b.role], opacity: 0.35 }} />{b.label}</span>
+        ))}
       </div>
     </div>
   );

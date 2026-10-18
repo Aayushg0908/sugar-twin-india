@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { AlertOctagon, AlertTriangle, Search, Sparkles } from "lucide-react";
 import type { PatientRow } from "../api";
-import { Pill, TrendIcon, glucoseColor } from "../ui";
+import { StatTile, TrendIcon, glucoseColor } from "../ui";
+
+/** A status in the list: coloured dot for the state, text in normal ink so it stays readable. */
+const Status = ({ dot, children }: { dot: string; children: React.ReactNode }) => (
+  <span className="flex items-center gap-1.5 text-xs font-medium text-slate-700"><span className={`h-2 w-2 rounded-full ${dot}`} />{children}</span>
+);
 
 type Filter = "all" | "urgent" | "watch" | "T2D" | "Prediabetes" | "Normoglycemic";
 const FILTERS: { key: Filter; label: string }[] = [
@@ -31,23 +36,19 @@ export default function PatientList({ patients, selected, onSelect }: {
   const nWatch = patients.filter((p) => p.urgency === "watch").length;
 
   return (
-    <aside className="flex h-full w-[320px] shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="flex h-full w-[320px] shrink-0 flex-col border-r border-slate-200 bg-panel">
       <div className="space-y-3 border-b border-slate-100 p-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Patients</h2>
+          <h2 className="text-sm font-semibold text-slate-500">Patients</h2>
           <span className="text-xs text-slate-400">{patients.length} monitored</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => setFilter("urgent")} className="rounded-xl bg-red-50 px-3 py-2 text-left">
-            <div className="text-xl font-bold text-red-700">{nUrgent}</div>
-            <div className="text-[11px] font-medium text-red-600">urgent: low sugar or above 250 likely</div>
-          </button>
-          <button onClick={() => setFilter("watch")} className="rounded-xl bg-amber-50 px-3 py-2 text-left">
-            <div className="text-xl font-bold text-amber-700">{nWatch}</div>
-            <div className="text-[11px] font-medium text-amber-600">watch: spike above 180 likely</div>
-          </button>
+          <StatTile onClick={() => setFilter("urgent")} icon={<AlertOctagon />} label="Urgent" value={nUrgent}
+            tone="red" note="low sugar or above 250 likely" />
+          <StatTile onClick={() => setFilter("watch")} icon={<AlertTriangle />} label="Watch" value={nWatch}
+            tone="amber" note="spike above 180 likely" />
         </div>
-        <label className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm">
+        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
           <Search className="h-4 w-4 text-slate-400" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search patient ID"
             className="w-full bg-transparent outline-none placeholder:text-slate-400" />
@@ -55,7 +56,7 @@ export default function PatientList({ patients, selected, onSelect }: {
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setFilter(f.key)}
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${filter === f.key ? "bg-brand-600 text-[#fff]" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition ${filter === f.key ? "border-slate-300 bg-slate-200 text-slate-900" : "border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
               {f.label}
             </button>
           ))}
@@ -68,8 +69,8 @@ export default function PatientList({ patients, selected, onSelect }: {
           return (
             <li key={p.id}>
               <button onClick={() => onSelect(p.id)}
-                className={`flex w-full items-center gap-3 border-b border-slate-50 px-4 py-3 text-left transition ${active ? "bg-brand-50" : "hover:bg-slate-50"}`}>
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${p.name ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"}`}>
+                className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition ${active ? "bg-slate-100 shadow-[inset_3px_0_0_var(--color-brand-600)]" : "hover:bg-slate-50"}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${p.name ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
                   {p.name ? <Sparkles className="h-4 w-4" /> : `${p.sex}${p.age}`}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -83,10 +84,10 @@ export default function PatientList({ patients, selected, onSelect }: {
                     <span>·</span>
                     <span>{Math.round(p.tir14)}% in range</span>
                   </div>
-                  <div className="mt-1 flex gap-1">
-                    {p.levels.hypo === "high" && <Pill className="bg-red-50 text-red-700 ring-red-200">Low sugar likely</Pill>}
-                    {p.levels.severe === "high" && <Pill className="bg-orange-50 text-orange-700 ring-orange-200">Above 250 likely</Pill>}
-                    {p.levels.spike === "high" && p.levels.severe !== "high" && <Pill className="bg-amber-50 text-amber-700 ring-amber-200">Spike likely</Pill>}
+                  <div className="mt-1 flex flex-wrap gap-x-3">
+                    {p.levels.hypo === "high" && <Status dot="bg-red-500">Low sugar likely</Status>}
+                    {p.levels.severe === "high" && <Status dot="bg-red-500">Above 250 likely</Status>}
+                    {p.levels.spike === "high" && p.levels.severe !== "high" && <Status dot="bg-amber-500">Spike likely</Status>}
                   </div>
                 </div>
                 <div className={`flex flex-col items-end ${glucoseColor(p.glucose)}`}>

@@ -1,7 +1,7 @@
 """
-Check that the regenerated synthetic data matches the reference copy exactly.
+Check that the synthetic data on this machine matches the reference copy exactly.
 
-The datasets are not stored in git; every machine regenerates them from fixed seeds.
+The datasets are committed to git and can also be regenerated from fixed seeds.
 This script compares a fingerprint (row counts + checksums) against data/fingerprint.json,
 so results from different laptops are comparable.
 

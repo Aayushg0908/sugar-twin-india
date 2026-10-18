@@ -84,7 +84,7 @@ This adrenergic response gives the model an early warning signal for lows.
 |---|---|
 | Glucose spike (primary) | Current reading < 180 and **any reading > 180 in the next 2 h** |
 | Severe spike | Any reading > 250 in the next 2 h |
-| Hypoglycaemia | Current reading ≥ 70 and any reading < 70 in the next 2 h (episode = ≥ 15 min below 70) |
+| Hypoglycaemia | Current reading ≥ 70 and at least two consecutive readings < 70 (≥ 10 min) in the next 2 h |
 
 ## Validation summary (`validate_wearable.py`)
 - **Agreement with the EHR:** CGM-derived GMI vs lab HbA1c, r = 0.93 in T2D; 35% differ by ≥ 0.5% (real-world studies report about 28%).
