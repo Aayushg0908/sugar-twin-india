@@ -1,0 +1,447 @@
+{
+  "scenarios": {
+    "1. Normal day, after a meal (T2D)": {
+      "alert": "spike",
+      "n": 9501,
+      "patients": 344,
+      "event_rate": 0.6221450567245483,
+      "LightGBM": {
+        "mean_risk": 0.6131839467841931,
+        "sensitivity": 0.9336829639654881,
+        "false_alarm_rate": 0.2384401114206128,
+        "auroc": 0.9437173222672991,
+        "mae60": 16.039767883846242
+      },
+      "GRU": {
+        "mean_risk": 0.6239638924598694,
+        "sensitivity": 0.9399424801218068,
+        "false_alarm_rate": 0.24261838440111422,
+        "auroc": 0.946292804737308,
+        "mae60": 16.372026443481445
+      },
+      "Ensemble": {
+        "mean_risk": 0.6185739218817554,
+        "sensitivity": 0.9404500084588057,
+        "false_alarm_rate": 0.23899721448467967,
+        "auroc": 0.9477245341648568,
+        "mae60": 15.894656422940296
+      }
+    },
+    "2. Feast / wedding evening (T2D)": {
+      "alert": "spike",
+      "n": 709,
+      "patients": 129,
+      "event_rate": 0.6840620636940002,
+      "LightGBM": {
+        "mean_risk": 0.5202989883960621,
+        "sensitivity": 0.7525773195876289,
+        "false_alarm_rate": 0.19196428571428573,
+        "auroc": 0.8707290132547864,
+        "mae60": 44.30415313022479
+      },
+      "GRU": {
+        "mean_risk": 0.514371395111084,
+        "sensitivity": 0.7402061855670103,
+        "false_alarm_rate": 0.18303571428571427,
+        "auroc": 0.8725193298969072,
+        "mae60": 45.44942855834961
+      },
+      "Ensemble": {
+        "mean_risk": 0.5173351847065875,
+        "sensitivity": 0.7505154639175258,
+        "false_alarm_rate": 0.18303571428571427,
+        "auroc": 0.8732418998527246,
+        "mae60": 44.8102036074296
+      }
+    },
+    "3. Missed medicine day (T2D)": {
+      "alert": "spike",
+      "n": 51630,
+      "patients": 357,
+      "event_rate": 0.43600618839263916,
+      "LightGBM": {
+        "mean_risk": 0.4317543061041615,
+        "sensitivity": 0.8615343609790769,
+        "false_alarm_rate": 0.19523335279370857,
+        "auroc": 0.9184207113040098,
+        "mae60": 15.65687714351812
+      },
+      "GRU": {
+        "mean_risk": 0.4364689290523529,
+        "sensitivity": 0.863711074585758,
+        "false_alarm_rate": 0.19193653628215254,
+        "auroc": 0.9200086418595489,
+        "mae60": 15.656126976013184
+      },
+      "Ensemble": {
+        "mean_risk": 0.4341116250150813,
+        "sensitivity": 0.8655768291057705,
+        "false_alarm_rate": 0.19227995466877296,
+        "auroc": 0.9208183730176281,
+        "mae60": 15.549059114952875
+      }
+    },
+    "4. Illness day (T2D)": {
+      "alert": "spike",
+      "n": 1084,
+      "patients": 26,
+      "event_rate": 0.5369003415107727,
+      "LightGBM": {
+        "mean_risk": 0.4986718160068868,
+        "sensitivity": 0.8591065292096219,
+        "false_alarm_rate": 0.2290836653386454,
+        "auroc": 0.9158931285168603,
+        "mae60": 19.81875916245894
+      },
+      "GRU": {
+        "mean_risk": 0.5001873970031738,
+        "sensitivity": 0.8608247422680413,
+        "false_alarm_rate": 0.21713147410358566,
+        "auroc": 0.9193637819854602,
+        "mae60": 19.862449645996094
+      },
+      "Ensemble": {
+        "mean_risk": 0.4994296075356237,
+        "sensitivity": 0.865979381443299,
+        "false_alarm_rate": 0.2151394422310757,
+        "auroc": 0.9188572171793923,
+        "mae60": 19.754091989328344
+      }
+    },
+    "5. Fasting day on SU/insulin (hypo risk)": {
+      "alert": "hypo",
+      "n": 1851,
+      "patients": 46,
+      "event_rate": 0.06807131320238113,
+      "LightGBM": {
+        "mean_risk": 0.038100126065580615,
+        "sensitivity": 0.8253968253968254,
+        "false_alarm_rate": 0.051014492753623186,
+        "auroc": 0.9669335173682999,
+        "mae60": 23.10708887798355
+      },
+      "GRU": {
+        "mean_risk": 0.041293300688266754,
+        "sensitivity": 0.7857142857142857,
+        "false_alarm_rate": 0.05507246376811594,
+        "auroc": 0.962364849321371,
+        "mae60": 22.64314842224121
+      },
+      "Ensemble": {
+        "mean_risk": 0.03969671362926648,
+        "sensitivity": 0.8174603174603174,
+        "false_alarm_rate": 0.057391304347826085,
+        "auroc": 0.9659811364159191,
+        "mae60": 22.571875646678745
+      }
+    },
+    "6a. After meal WITH a walk (T2D)": {
+      "alert": "spike",
+      "n": 2381,
+      "patients": 341,
+      "event_rate": 0.6808063983917236,
+      "LightGBM": {
+        "mean_risk": 0.6736640431018832,
+        "sensitivity": 0.932757557063541,
+        "false_alarm_rate": 0.30526315789473685,
+        "auroc": 0.9310196759635054,
+        "mae60": 16.0640939491292
+      },
+      "GRU": {
+        "mean_risk": 0.6793801784515381,
+        "sensitivity": 0.9389265885256015,
+        "false_alarm_rate": 0.30526315789473685,
+        "auroc": 0.9323180135718693,
+        "mae60": 16.13837432861328
+      },
+      "Ensemble": {
+        "mean_risk": 0.6765221173211472,
+        "sensitivity": 0.9370758790869833,
+        "false_alarm_rate": 0.3026315789473684,
+        "auroc": 0.9342429949024319,
+        "mae60": 15.74961485245583
+      }
+    },
+    "6b. After meal, NO walk (T2D)": {
+      "alert": "spike",
+      "n": 18977,
+      "patients": 436,
+      "event_rate": 0.6795594692230225,
+      "LightGBM": {
+        "mean_risk": 0.6610083327694545,
+        "sensitivity": 0.9433933002481389,
+        "false_alarm_rate": 0.2665679986844269,
+        "auroc": 0.9442423121197173,
+        "mae60": 17.176177025843995
+      },
+      "GRU": {
+        "mean_risk": 0.6723040342330933,
+        "sensitivity": 0.9471153846153846,
+        "false_alarm_rate": 0.2677191251438908,
+        "auroc": 0.9459850562689058,
+        "mae60": 17.667367935180664
+      },
+      "Ensemble": {
+        "mean_risk": 0.6666561820511367,
+        "sensitivity": 0.9492866004962779,
+        "false_alarm_rate": 0.265416872224963,
+        "auroc": 0.9479554702582138,
+        "mae60": 17.111751940396626
+      }
+    },
+    "7. Night 00:00-05:00, SU/insulin (hypo)": {
+      "alert": "hypo",
+      "n": 28857,
+      "patients": 227,
+      "event_rate": 0.01808919757604599,
+      "LightGBM": {
+        "mean_risk": 0.01934699658589286,
+        "sensitivity": 0.8160919540229885,
+        "false_alarm_rate": 0.038962413975648494,
+        "auroc": 0.9765532385856951,
+        "mae60": 12.9928230885871
+      },
+      "GRU": {
+        "mean_risk": 0.01872408576309681,
+        "sensitivity": 0.814176245210728,
+        "false_alarm_rate": 0.03370389977060173,
+        "auroc": 0.9799622672635213,
+        "mae60": 12.796521186828613
+      },
+      "Ensemble": {
+        "mean_risk": 0.01903554176522722,
+        "sensitivity": 0.8218390804597702,
+        "false_alarm_rate": 0.037091935768484206,
+        "auroc": 0.9794146659391908,
+        "mae60": 12.79908207525805
+      }
+    },
+    "8. Poor sleep last night (T2D)": {
+      "alert": "spike",
+      "n": 14848,
+      "patients": 236,
+      "event_rate": 0.44484105706214905,
+      "LightGBM": {
+        "mean_risk": 0.43071986540714924,
+        "sensitivity": 0.8575321725965178,
+        "false_alarm_rate": 0.18997937644061627,
+        "auroc": 0.9193309984394346,
+        "mae60": 16.894435308938814
+      },
+      "GRU": {
+        "mean_risk": 0.434706449508667,
+        "sensitivity": 0.8572293716881151,
+        "false_alarm_rate": 0.18573334950867404,
+        "auroc": 0.9217625066316908,
+        "mae60": 16.96126937866211
+      },
+      "Ensemble": {
+        "mean_risk": 0.4327131661095958,
+        "sensitivity": 0.8599545798637396,
+        "false_alarm_rate": 0.18633992478466577,
+        "auroc": 0.9220113723910262,
+        "mae60": 16.8205230135266
+      }
+    },
+    "9. Healthy person after a big meal (false alarms)": {
+      "alert": "spike",
+      "n": 10702,
+      "patients": 149,
+      "event_rate": 0.030274715274572372,
+      "LightGBM": {
+        "mean_risk": 0.02432472284692891,
+        "sensitivity": 0.2808641975308642,
+        "false_alarm_rate": 0.004432453266525342,
+        "auroc": 0.9564323509608407,
+        "mae60": 9.605210022312589
+      },
+      "GRU": {
+        "mean_risk": 0.02828376740217209,
+        "sensitivity": 0.38580246913580246,
+        "false_alarm_rate": 0.006359606860666795,
+        "auroc": 0.9612124651149511,
+        "mae60": 9.807032585144043
+      },
+      "Ensemble": {
+        "mean_risk": 0.02630424472802189,
+        "sensitivity": 0.3333333333333333,
+        "false_alarm_rate": 0.004336095586818269,
+        "auroc": 0.9627190947612353,
+        "mae60": 9.545914733272696
+      }
+    },
+    "10. Sensor gaps (<80% CGM data in last 6 h)": {
+      "alert": "spike",
+      "n": 4870,
+      "patients": 424,
+      "event_rate": 0.21314167976379395,
+      "LightGBM": {
+        "mean_risk": 0.22090361467680328,
+        "sensitivity": 0.7803468208092486,
+        "false_alarm_rate": 0.08794363256784969,
+        "auroc": 0.947871790539861,
+        "mae60": 12.936135198569572
+      },
+      "GRU": {
+        "mean_risk": 0.22383825480937958,
+        "sensitivity": 0.7736030828516378,
+        "false_alarm_rate": 0.08794363256784969,
+        "auroc": 0.9473601775535898,
+        "mae60": 13.173324584960938
+      },
+      "Ensemble": {
+        "mean_risk": 0.22237092683923085,
+        "sensitivity": 0.7890173410404624,
+        "false_alarm_rate": 0.08637787056367432,
+        "auroc": 0.9487617708697875,
+        "mae60": 12.934376202395807
+      }
+    }
+  },
+  "whatif": [
+    {
+      "model": "LightGBM",
+      "base_risk": 0.5750909902892445,
+      "meal60_risk": 0.9081731611474573,
+      "meal120_risk": 0.9567822256683127,
+      "meal60_walk_risk": 0.8827565547499371,
+      "base_fc120": 175.12970025796062,
+      "meal60_fc120": 187.18435769753808,
+      "meal120_fc120": 201.37927835061464,
+      "meal60_walk_fc120": 184.2468796732573
+    },
+    {
+      "model": "GRU",
+      "base_risk": 0.5925345420837402,
+      "meal60_risk": 0.9410866498947144,
+      "meal120_risk": 0.9854656457901001,
+      "meal60_walk_risk": 0.936139702796936,
+      "base_fc120": 177.37255859375,
+      "meal60_fc120": 187.2984619140625,
+      "meal120_fc120": 205.18316650390625,
+      "meal60_walk_fc120": 184.0035858154297
+    }
+  ],
+  "checks": [
+    {
+      "test": "1. Normal day, after a meal (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 94%, 0.948)"
+    },
+    {
+      "test": "2. Feast / wedding evening (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 75%, 0.873)"
+    },
+    {
+      "test": "3. Missed medicine day (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 87%, 0.921)"
+    },
+    {
+      "test": "4. Illness day (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 87%, 0.919)"
+    },
+    {
+      "test": "5. Fasting day on SU/insulin (hypo risk)",
+      "pass": true,
+      "detail": "catches >= 60% of lows (got 82%)"
+    },
+    {
+      "test": "6a. After meal WITH a walk (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 94%, 0.934)"
+    },
+    {
+      "test": "6b. After meal, NO walk (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 95%, 0.948)"
+    },
+    {
+      "test": "7. Night 00:00-05:00, SU/insulin (hypo)",
+      "pass": true,
+      "detail": "catches >= 60% of lows (got 82%)"
+    },
+    {
+      "test": "8. Poor sleep last night (T2D)",
+      "pass": true,
+      "detail": "catches >= 70% of spikes and AUROC >= 0.85 (got 86%, 0.922)"
+    },
+    {
+      "test": "9. Healthy person after a big meal (false alarms)",
+      "pass": true,
+      "detail": "false alarms <= 5% (got 0.4%)"
+    },
+    {
+      "test": "10. Sensor gaps (<80% CGM data in last 6 h)",
+      "pass": true,
+      "detail": "AUROC >= 0.85 despite gaps (got 0.949)"
+    },
+    {
+      "test": "6. Post-meal forecast matches reality with and without a walk",
+      "pass": true,
+      "detail": "walk: actual +7.1 vs predicted +6.8 mg/dL in 60 min; no walk: actual -0.6 vs predicted -1.7 mg/dL in 60 min (need within 3 mg/dL)"
+    },
+    {
+      "test": "LightGBM: 60 g meal raises spike risk",
+      "pass": true,
+      "detail": "true for 96% of 400 moments (need 90%)"
+    },
+    {
+      "test": "LightGBM: 60 g meal raises 2-h forecast",
+      "pass": false,
+      "detail": "true for 71% of 400 moments (need 90%)"
+    },
+    {
+      "test": "LightGBM: 120 g meal raises forecast more than 60 g",
+      "pass": true,
+      "detail": "true for 100% of 400 moments (need 90%)"
+    },
+    {
+      "test": "LightGBM: Walk after meal lowers 2-h forecast",
+      "pass": false,
+      "detail": "true for 66% of 400 moments (need 80%)"
+    },
+    {
+      "test": "LightGBM: Walk after meal lowers spike risk",
+      "pass": true,
+      "detail": "true for 86% of 400 moments (need 80%)"
+    },
+    {
+      "test": "LightGBM: 1 h sensor gap -> still sensible output",
+      "pass": true,
+      "detail": "all forecasts within 40-400 mg/dL, median change 3.0 mg/dL (need < 25)"
+    },
+    {
+      "test": "GRU: 60 g meal raises spike risk",
+      "pass": true,
+      "detail": "true for 98% of 400 moments (need 90%)"
+    },
+    {
+      "test": "GRU: 60 g meal raises 2-h forecast",
+      "pass": false,
+      "detail": "true for 64% of 400 moments (need 90%)"
+    },
+    {
+      "test": "GRU: 120 g meal raises forecast more than 60 g",
+      "pass": true,
+      "detail": "true for 100% of 400 moments (need 90%)"
+    },
+    {
+      "test": "GRU: Walk after meal lowers 2-h forecast",
+      "pass": false,
+      "detail": "true for 74% of 400 moments (need 80%)"
+    },
+    {
+      "test": "GRU: Walk after meal lowers spike risk",
+      "pass": false,
+      "detail": "true for 52% of 400 moments (need 80%)"
+    },
+    {
+      "test": "GRU: 1 h sensor gap -> still sensible output",
+      "pass": true,
+      "detail": "all forecasts within 40-400 mg/dL, median change 4.9 mg/dL (need < 25)"
+    }
+  ]
+}
