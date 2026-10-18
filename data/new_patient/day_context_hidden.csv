@@ -1,0 +1,15 @@
+i,day,day_type,ill,poor_sleep_prev,missed_dose_frac,hypo_amp,stress_events,date
+0,0,weekday,False,False,0.6,35.0,0,2026-09-17
+0,1,weekday,False,False,0.6,35.0,0,2026-09-18
+0,2,weekend,False,True,0.8,0.0,0,2026-09-19
+0,3,weekend,False,True,0.19999999999999996,35.0,0,2026-09-20
+0,4,weekday,False,False,0.6,35.0,0,2026-09-21
+0,5,weekday,False,True,0.19999999999999996,35.0,1,2026-09-22
+0,6,weekday,False,True,0.4,35.0,1,2026-09-23
+0,7,weekday,False,True,0.19999999999999996,35.0,0,2026-09-24
+0,8,illness,True,True,0.6,0.0,1,2026-09-25
+0,9,illness,True,False,0.6,0.0,0,2026-09-26
+0,10,illness,True,True,1.0,0.0,0,2026-09-27
+0,11,illness,True,False,0.6,0.0,1,2026-09-28
+0,12,weekday,False,True,0.19999999999999996,35.0,1,2026-09-29
+0,13,weekday,False,True,0.0,35.0,1,2026-09-30

@@ -1,0 +1,146 @@
+{
+  "baseline": {
+    "LightGBM": {
+      "spike_auroc": 0.9562453417468633,
+      "hypo_auroc": 0.9765777258425562,
+      "mae60": 13.900664432926973
+    },
+    "GRU": {
+      "spike_auroc": 0.9577269341310247,
+      "hypo_auroc": 0.9784651673563296,
+      "mae60": 13.918035507202148
+    },
+    "Ensemble": {
+      "spike_auroc": 0.9579408874826115,
+      "hypo_auroc": 0.9783187816243418,
+      "mae60": 13.787870270061688
+    }
+  },
+  "cold_start": {
+    "day 1-2": {
+      "LightGBM": {
+        "spike_auroc": 0.9527027218023383,
+        "hypo_auroc": 0.9786263930750202,
+        "mae60": 14.389869604472219
+      },
+      "GRU": {
+        "spike_auroc": 0.9552869897042087,
+        "hypo_auroc": 0.9796275718791672,
+        "mae60": 14.33023738861084
+      },
+      "Ensemble": {
+        "spike_auroc": 0.9552293616514578,
+        "hypo_auroc": 0.9799903575080019,
+        "mae60": 14.21603507702157
+      }
+    },
+    "day 3-7": {
+      "LightGBM": {
+        "spike_auroc": 0.955773261243674,
+        "hypo_auroc": 0.9758501622672745,
+        "mae60": 13.835192354036929
+      },
+      "GRU": {
+        "spike_auroc": 0.9576902756519591,
+        "hypo_auroc": 0.9777592891659389,
+        "mae60": 13.850357055664062
+      },
+      "Ensemble": {
+        "spike_auroc": 0.9577073658372712,
+        "hypo_auroc": 0.9775690147673407,
+        "mae60": 13.722020693661268
+      }
+    },
+    "day 8-14": {
+      "LightGBM": {
+        "spike_auroc": 0.9573938562168539,
+        "hypo_auroc": 0.9766136199757188,
+        "mae60": 13.82741029023196
+      },
+      "GRU": {
+        "spike_auroc": 0.9583007995757254,
+        "hypo_auroc": 0.9787072338546305,
+        "mae60": 13.865349769592285
+      },
+      "Ensemble": {
+        "spike_auroc": 0.9587211959816334,
+        "hypo_auroc": 0.9784722007339899,
+        "mae60": 13.729928947966984
+      }
+    }
+  },
+  "no_meal_logging": {
+    "LightGBM": {
+      "spike_auroc": 0.9532329487367818,
+      "hypo_auroc": 0.9754671341414316,
+      "mae60": 14.599915879729954
+    },
+    "GRU": {
+      "spike_auroc": 0.9555375693362317,
+      "hypo_auroc": 0.9777564316563531,
+      "mae60": 14.40438175201416
+    },
+    "Ensemble": {
+      "spike_auroc": 0.9554411726476431,
+      "hypo_auroc": 0.9775284577947759,
+      "mae60": 14.388300622634015
+    }
+  },
+  "no_smartwatch": {
+    "LightGBM": {
+      "spike_auroc": 0.9510267368577664,
+      "hypo_auroc": 0.9755629863523396,
+      "mae60": 15.047076064213162
+    },
+    "GRU": {
+      "spike_auroc": 0.9563929236010122,
+      "hypo_auroc": 0.9777966592713749,
+      "mae60": 14.06052017211914
+    },
+    "Ensemble": {
+      "spike_auroc": 0.9562474399190716,
+      "hypo_auroc": 0.9776410068354341,
+      "mae60": 14.188060935287519
+    }
+  },
+  "noisy_sensor": {
+    "LightGBM": {
+      "spike_auroc": 0.9406406158286383,
+      "hypo_auroc": 0.9653838786577634,
+      "mae60": 16.704604461454466
+    },
+    "GRU": {
+      "spike_auroc": 0.9404778291057629,
+      "hypo_auroc": 0.9685993830906352,
+      "mae60": 16.808414459228516
+    },
+    "Ensemble": {
+      "spike_auroc": 0.9422682450392788,
+      "hypo_auroc": 0.9681077964898307,
+      "mae60": 16.543950993202312
+    },
+    "_extra_mard_pct": 7.971141338348389
+  },
+  "checks": [
+    {
+      "test": "1. Cold start: spike AUROC on day 1-2 >= 0.90",
+      "pass": true,
+      "detail": "day 1-2 0.955 vs day 8-14 0.959"
+    },
+    {
+      "test": "2. No meal logging: spike AUROC drops <= 0.03",
+      "pass": true,
+      "detail": "0.958 -> 0.955 (drop 0.002); hypo 0.978 -> 0.978; MAE60 13.8 -> 14.4"
+    },
+    {
+      "test": "3. No smartwatch: spike AUROC drops <= 0.03",
+      "pass": true,
+      "detail": "0.958 -> 0.956 (drop 0.002); hypo 0.978 -> 0.978; MAE60 13.8 -> 14.2"
+    },
+    {
+      "test": "4. Noisier sensor (+10% error): spike AUROC drops <= 0.03",
+      "pass": true,
+      "detail": "0.958 -> 0.942 (drop 0.016); hypo 0.978 -> 0.968; MAE60 13.8 -> 16.5"
+    }
+  ]
+}

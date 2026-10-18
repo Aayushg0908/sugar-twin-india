@@ -304,22 +304,23 @@ def build_chunk(pids, G, HR, ST, AS, ev, daily, ehr, every):
     return df[df.g_now.notna()]
 
 
-def main(every, limit):
-    t0 = time.time()
-    OUT.mkdir(parents=True, exist_ok=True)
-    splits = make_splits()
-
-    feats = pd.read_csv(EHR / "patient_features.csv")
+def prepare_ehr(feats: pd.DataFrame, meds: pd.DataFrame, splits: pd.DataFrame) -> pd.DataFrame:
+    """Static EHR columns used by the models, one row per patient (numeric, float32)."""
     ehr = feats[["patient_id"] + EHR_NUMERIC + EHR_FLAGS].copy()
     for col, mapping in EHR_CATEG.items():
         ehr[col] = feats[col].map(mapping)
     ehr[EHR_NUMERIC + EHR_FLAGS + list(EHR_CATEG)] = ehr[EHR_NUMERIC + EHR_FLAGS + list(EHR_CATEG)].astype(np.float32)
-    ehr["prescribed_doses_per_day"] = 0.0
-    meds = pd.read_csv(EHR / "medications.csv")
     act = meds[meds.end_date.isna() & (meds.indication == "Type 2 diabetes")]
     per_day = act.dose.str.contains("BD").map({True: 2, False: 1}).groupby(act.patient_id).sum()
     ehr["prescribed_doses_per_day"] = ehr.patient_id.map(per_day).fillna(0).astype(np.float32)
-    ehr = ehr.merge(splits[["patient_id", "split"]], on="patient_id")
+    return ehr.merge(splits[["patient_id", "split"]], on="patient_id")
+
+
+def main(every, limit):
+    t0 = time.time()
+    OUT.mkdir(parents=True, exist_ok=True)
+    splits = make_splits()
+    ehr = prepare_ehr(pd.read_csv(EHR / "patient_features.csv"), pd.read_csv(EHR / "medications.csv"), splits)
 
     pids, cgm = load_stream(W / "cgm.parquet", ["glucose_mgdl"])
     _, vit = load_stream(W / "vitals.parquet", ["heart_rate_bpm", "steps", "sleep_stage"])

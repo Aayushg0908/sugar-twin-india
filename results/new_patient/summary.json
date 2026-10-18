@@ -1,0 +1,133 @@
+{
+  "persona": {
+    "name": "Sunita",
+    "age": 48,
+    "sex": "F",
+    "region": "South",
+    "setting": "Urban",
+    "height_cm": 155.0,
+    "bmi": 27.5,
+    "diet": "Non-vegetarian",
+    "activity_level": "Sedentary",
+    "smoking": "Never",
+    "alcohol": "None",
+    "family_history_diabetes": true,
+    "family_history_cvd": false,
+    "diabetes_duration_yrs": 3.0
+  },
+  "seed": 100,
+  "hba1c": 7.7,
+  "active_meds": [
+    "Atorvastatin",
+    "Empagliflozin",
+    "Glimepiride",
+    "Metformin",
+    "Sitagliptin"
+  ],
+  "diagnoses": [
+    "Dyslipidaemia",
+    "Obesity (Asian BMI cut-off)",
+    "T2DM with diabetic retinopathy",
+    "Type 2 diabetes mellitus"
+  ],
+  "cgm": {
+    "mean": 160.15124378109454,
+    "tir": 53.482587064676615,
+    "tar": 36.11940298507463,
+    "tbr": 10.398009950248756
+  },
+  "ml": {
+    "spike_auroc": 0.945430747263208,
+    "spike_events": {
+      "events": 48,
+      "detection_rate": 1.0,
+      "median_lead_time_min": 120.0,
+      "mean_lead_time_min": 97.5
+    },
+    "hypo_events": {
+      "events": 18,
+      "detection_rate": 1.0,
+      "median_lead_time_min": 120.0,
+      "mean_lead_time_min": 103.33333333333333
+    },
+    "alerts_per_day": 2.5,
+    "mae60": 20.293811816747766,
+    "mae120": 26.866856993295144
+  },
+  "twin": {
+    "raw": {
+      "tau": 70.0,
+      "p10": 11.700647535478426,
+      "n_meals": 11,
+      "n_meals_raw": 11,
+      "fit_rmse": 16.59431800337155
+    },
+    "twin": {
+      "tau": 67.89473684210526,
+      "p10": 11.08184857317172,
+      "w": 1.0
+    },
+    "truth": {
+      "tau": 69.83762020033167,
+      "p10": 12.075000000000001,
+      "w": 1.0
+    },
+    "population": {
+      "tau": 55.0,
+      "p10": 8.273,
+      "w": 1.0
+    },
+    "n_walk_meals": 1,
+    "week1_windows": 11
+  },
+  "twin_week2_peak_error": {
+    "twin": 43.15756400928182,
+    "population": 59.00093088053102,
+    "truth": 39.65291800151125
+  },
+  "week2_meals": 11,
+  "whatif": [
+    {
+      "question": "2 roti + dal (60 g, low GI)",
+      "peak": 54.702113186288784,
+      "peak_min": 110,
+      "at_2h": 54.33497367836109
+    },
+    {
+      "question": "Idli-sambar (60 g, high GI)",
+      "peak": 77.98188650645235,
+      "peak_min": 70,
+      "at_2h": 58.53577720643761
+    },
+    {
+      "question": "Rice meal 85 g (her usual lunch)",
+      "peak": 110.47433921747412,
+      "peak_min": 70,
+      "at_2h": 82.92568437578657
+    },
+    {
+      "question": "Rice 85 g + 20 min walk after 30 min",
+      "peak": 94.9764284332825,
+      "peak_min": 75,
+      "at_2h": 75.32743150317678
+    },
+    {
+      "question": "Rice 85 g + 30 min walk after 15 min",
+      "peak": 95.42631507479003,
+      "peak_min": 75,
+      "at_2h": 75.5534306776197
+    },
+    {
+      "question": "Skip metformin today",
+      "peak": 15.497999999999998,
+      "peak_min": 120,
+      "at_2h": 15.497999999999998
+    },
+    {
+      "question": "Skip gliclazide/glimepiride today",
+      "peak": 13.776,
+      "peak_min": 120,
+      "at_2h": 13.776
+    }
+  ]
+}

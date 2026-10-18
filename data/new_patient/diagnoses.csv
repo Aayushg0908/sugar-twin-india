@@ -1,0 +1,5 @@
+patient_id,icd10,description,onset_date
+NEW001,E11.9,Type 2 diabetes mellitus,2023-09-30
+NEW001,E78.5,Dyslipidaemia,2026-04-22
+NEW001,E66.9,Obesity (Asian BMI cut-off),2023-03-20
+NEW001,E11.319,T2DM with diabetic retinopathy,2026-06-05

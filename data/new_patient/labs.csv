@@ -1,0 +1,111 @@
+patient_id,category,loinc,test,value,unit,date
+NEW001,vital-signs,29463-7,Body weight,64.1,kg,2024-01-02
+NEW001,vital-signs,39156-5,BMI,26.7,kg/m2,2024-01-02
+NEW001,vital-signs,8280-0,Waist circumference,85.0,cm,2024-01-02
+NEW001,vital-signs,8480-6,Systolic blood pressure,139.0,mmHg,2024-01-02
+NEW001,vital-signs,8462-4,Diastolic blood pressure,89.0,mmHg,2024-01-02
+NEW001,vital-signs,8867-4,Heart rate,68.0,bpm,2024-01-02
+NEW001,laboratory,4548-4,HbA1c,8.4,%,2024-01-02
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),265.0,mg/dL,2024-01-02
+NEW001,laboratory,13457-7,LDL cholesterol,169.0,mg/dL,2024-01-02
+NEW001,laboratory,2571-8,Triglycerides,177.0,mg/dL,2024-01-02
+NEW001,laboratory,2085-9,HDL cholesterol,51.0,mg/dL,2024-01-02
+NEW001,laboratory,2093-3,Total cholesterol,255.0,mg/dL,2024-01-02
+NEW001,laboratory,2160-0,Serum creatinine,0.82,mg/dL,2024-01-02
+NEW001,laboratory,98979-8,eGFR (CKD-EPI 2021),90.0,mL/min/1.73m2,2024-01-02
+NEW001,laboratory,1742-6,ALT,28.0,U/L,2024-01-02
+NEW001,vital-signs,29463-7,Body weight,64.7,kg,2024-04-16
+NEW001,vital-signs,39156-5,BMI,26.9,kg/m2,2024-04-16
+NEW001,vital-signs,8480-6,Systolic blood pressure,135.0,mmHg,2024-04-16
+NEW001,vital-signs,8462-4,Diastolic blood pressure,84.0,mmHg,2024-04-16
+NEW001,vital-signs,8867-4,Heart rate,79.0,bpm,2024-04-16
+NEW001,laboratory,1558-6,Fasting plasma glucose,178.0,mg/dL,2024-04-16
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),265.0,mg/dL,2024-04-16
+NEW001,vital-signs,29463-7,Body weight,65.5,kg,2024-06-26
+NEW001,vital-signs,39156-5,BMI,27.3,kg/m2,2024-06-26
+NEW001,vital-signs,8480-6,Systolic blood pressure,139.0,mmHg,2024-06-26
+NEW001,vital-signs,8462-4,Diastolic blood pressure,90.0,mmHg,2024-06-26
+NEW001,vital-signs,8867-4,Heart rate,73.0,bpm,2024-06-26
+NEW001,laboratory,4548-4,HbA1c,8.1,%,2024-06-26
+NEW001,laboratory,1558-6,Fasting plasma glucose,159.0,mg/dL,2024-06-26
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),243.0,mg/dL,2024-06-26
+NEW001,vital-signs,29463-7,Body weight,65.9,kg,2024-10-15
+NEW001,vital-signs,39156-5,BMI,27.4,kg/m2,2024-10-15
+NEW001,vital-signs,8480-6,Systolic blood pressure,134.0,mmHg,2024-10-15
+NEW001,vital-signs,8462-4,Diastolic blood pressure,76.0,mmHg,2024-10-15
+NEW001,vital-signs,8867-4,Heart rate,71.0,bpm,2024-10-15
+NEW001,vital-signs,29463-7,Body weight,65.6,kg,2025-01-13
+NEW001,vital-signs,39156-5,BMI,27.3,kg/m2,2025-01-13
+NEW001,vital-signs,8280-0,Waist circumference,88.9,cm,2025-01-13
+NEW001,vital-signs,8480-6,Systolic blood pressure,143.0,mmHg,2025-01-13
+NEW001,vital-signs,8462-4,Diastolic blood pressure,81.0,mmHg,2025-01-13
+NEW001,vital-signs,8867-4,Heart rate,75.0,bpm,2025-01-13
+NEW001,laboratory,1558-6,Fasting plasma glucose,173.0,mg/dL,2025-01-13
+NEW001,laboratory,13457-7,LDL cholesterol,177.0,mg/dL,2025-01-13
+NEW001,laboratory,2571-8,Triglycerides,186.0,mg/dL,2025-01-13
+NEW001,laboratory,2085-9,HDL cholesterol,57.0,mg/dL,2025-01-13
+NEW001,laboratory,2093-3,Total cholesterol,271.0,mg/dL,2025-01-13
+NEW001,laboratory,2160-0,Serum creatinine,0.9,mg/dL,2025-01-13
+NEW001,laboratory,98979-8,eGFR (CKD-EPI 2021),79.0,mL/min/1.73m2,2025-01-13
+NEW001,laboratory,9318-7,Urine albumin/creatinine ratio,10.0,mg/g,2025-01-13
+NEW001,laboratory,1742-6,ALT,41.0,U/L,2025-01-13
+NEW001,vital-signs,29463-7,Body weight,65.5,kg,2025-03-23
+NEW001,vital-signs,39156-5,BMI,27.2,kg/m2,2025-03-23
+NEW001,vital-signs,8480-6,Systolic blood pressure,151.0,mmHg,2025-03-23
+NEW001,vital-signs,8462-4,Diastolic blood pressure,92.0,mmHg,2025-03-23
+NEW001,vital-signs,8867-4,Heart rate,72.0,bpm,2025-03-23
+NEW001,laboratory,4548-4,HbA1c,7.9,%,2025-03-23
+NEW001,laboratory,1558-6,Fasting plasma glucose,152.0,mg/dL,2025-03-23
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),208.0,mg/dL,2025-03-23
+NEW001,vital-signs,29463-7,Body weight,64.8,kg,2025-07-11
+NEW001,vital-signs,39156-5,BMI,27.0,kg/m2,2025-07-11
+NEW001,vital-signs,8480-6,Systolic blood pressure,140.0,mmHg,2025-07-11
+NEW001,vital-signs,8462-4,Diastolic blood pressure,87.0,mmHg,2025-07-11
+NEW001,vital-signs,8867-4,Heart rate,74.0,bpm,2025-07-11
+NEW001,laboratory,4548-4,HbA1c,7.9,%,2025-07-11
+NEW001,laboratory,1558-6,Fasting plasma glucose,164.0,mg/dL,2025-07-11
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),223.0,mg/dL,2025-07-11
+NEW001,vital-signs,29463-7,Body weight,66.3,kg,2025-10-12
+NEW001,vital-signs,39156-5,BMI,27.6,kg/m2,2025-10-12
+NEW001,vital-signs,8480-6,Systolic blood pressure,140.0,mmHg,2025-10-12
+NEW001,vital-signs,8462-4,Diastolic blood pressure,87.0,mmHg,2025-10-12
+NEW001,vital-signs,8867-4,Heart rate,71.0,bpm,2025-10-12
+NEW001,laboratory,4548-4,HbA1c,7.8,%,2025-10-12
+NEW001,laboratory,1558-6,Fasting plasma glucose,158.0,mg/dL,2025-10-12
+NEW001,vital-signs,29463-7,Body weight,65.4,kg,2025-12-28
+NEW001,vital-signs,39156-5,BMI,27.2,kg/m2,2025-12-28
+NEW001,vital-signs,8280-0,Waist circumference,86.6,cm,2025-12-28
+NEW001,vital-signs,8480-6,Systolic blood pressure,130.0,mmHg,2025-12-28
+NEW001,vital-signs,8462-4,Diastolic blood pressure,87.0,mmHg,2025-12-28
+NEW001,vital-signs,8867-4,Heart rate,72.0,bpm,2025-12-28
+NEW001,laboratory,1558-6,Fasting plasma glucose,145.0,mg/dL,2025-12-28
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),199.0,mg/dL,2025-12-28
+NEW001,laboratory,13457-7,LDL cholesterol,170.0,mg/dL,2025-12-28
+NEW001,laboratory,2571-8,Triglycerides,146.0,mg/dL,2025-12-28
+NEW001,laboratory,2085-9,HDL cholesterol,57.0,mg/dL,2025-12-28
+NEW001,laboratory,2093-3,Total cholesterol,256.0,mg/dL,2025-12-28
+NEW001,laboratory,2160-0,Serum creatinine,0.91,mg/dL,2025-12-28
+NEW001,laboratory,98979-8,eGFR (CKD-EPI 2021),78.0,mL/min/1.73m2,2025-12-28
+NEW001,laboratory,1742-6,ALT,33.0,U/L,2025-12-28
+NEW001,vital-signs,29463-7,Body weight,66.7,kg,2026-03-22
+NEW001,vital-signs,39156-5,BMI,27.8,kg/m2,2026-03-22
+NEW001,vital-signs,8480-6,Systolic blood pressure,130.0,mmHg,2026-03-22
+NEW001,vital-signs,8462-4,Diastolic blood pressure,77.0,mmHg,2026-03-22
+NEW001,vital-signs,8867-4,Heart rate,74.0,bpm,2026-03-22
+NEW001,laboratory,4548-4,HbA1c,7.6,%,2026-03-22
+NEW001,laboratory,1558-6,Fasting plasma glucose,147.0,mg/dL,2026-03-22
+NEW001,laboratory,1521-4,Post-prandial glucose (2h),221.0,mg/dL,2026-03-22
+NEW001,vital-signs,29463-7,Body weight,65.7,kg,2026-06-21
+NEW001,vital-signs,39156-5,BMI,27.4,kg/m2,2026-06-21
+NEW001,vital-signs,8480-6,Systolic blood pressure,143.0,mmHg,2026-06-21
+NEW001,vital-signs,8462-4,Diastolic blood pressure,90.0,mmHg,2026-06-21
+NEW001,vital-signs,8867-4,Heart rate,74.0,bpm,2026-06-21
+NEW001,laboratory,4548-4,HbA1c,7.9,%,2026-06-21
+NEW001,laboratory,1558-6,Fasting plasma glucose,142.0,mg/dL,2026-06-21
+NEW001,vital-signs,29463-7,Body weight,66.7,kg,2026-09-30
+NEW001,vital-signs,39156-5,BMI,27.8,kg/m2,2026-09-30
+NEW001,vital-signs,8480-6,Systolic blood pressure,143.0,mmHg,2026-09-30
+NEW001,vital-signs,8462-4,Diastolic blood pressure,90.0,mmHg,2026-09-30
+NEW001,vital-signs,8867-4,Heart rate,76.0,bpm,2026-09-30
+NEW001,laboratory,4548-4,HbA1c,7.7,%,2026-09-30
+NEW001,laboratory,1558-6,Fasting plasma glucose,151.0,mg/dL,2026-09-30

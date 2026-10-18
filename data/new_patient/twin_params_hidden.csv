@@ -1,0 +1,2 @@
+patient_id,insulin_sensitivity,beta_cell_function,a1c_offset,carb_sensitivity_mgdl_per_10g,dawn_phenomenon_mgdl,resting_hr_bpm,hrv_rmssd_ms,sleep_duration_h,sleep_efficiency,stress_reactivity,daily_steps_baseline,meal_carbs_g,med_adherence,weight_trend_kg_per_yr
+NEW001,0.33,0.421,1.408,8.05,10.1,75.3,24.8,5.61,0.848,0.85,3430,112.0,0.65,0.53

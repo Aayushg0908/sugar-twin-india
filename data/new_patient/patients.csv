@@ -1,0 +1,2 @@
+patient_id,cohort,age,sex,region,setting,height_cm,bmi,weight_kg,waist_cm,diet,staple,activity_level,smoking,alcohol,family_history_diabetes,family_history_cvd,diabetes_duration_yrs,reference_date
+NEW001,T2D,48,F,South,Urban,155.0,27.5,66.1,89.6,Non-vegetarian,rice,Sedentary,Never,None,True,False,3.0,2026-09-30

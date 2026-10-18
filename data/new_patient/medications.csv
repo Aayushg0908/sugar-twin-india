@@ -1,0 +1,7 @@
+patient_id,drug,drug_class,dose,indication,start_date,end_date
+NEW001,Atorvastatin,Statin,20 mg OD,Dyslipidaemia / CV risk,2026-01-28,
+NEW001,Metformin,Biguanide,500 mg BD,Type 2 diabetes,2023-09-30,2023-09-30
+NEW001,Metformin,Biguanide,1000 mg BD,Type 2 diabetes,2023-09-30,
+NEW001,Glimepiride,Sulfonylurea,2 mg OD,Type 2 diabetes,2023-09-30,
+NEW001,Empagliflozin,SGLT2 inhibitor,10 mg OD,Type 2 diabetes,2024-01-02,
+NEW001,Sitagliptin,DPP-4 inhibitor,100 mg OD,Type 2 diabetes,2025-07-11,
