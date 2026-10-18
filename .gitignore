@@ -15,3 +15,6 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+# Training console logs (numbers are in metrics.json)
+results/*.log

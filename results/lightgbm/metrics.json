@@ -1,0 +1,446 @@
+{
+  "run": {
+    "machine": "DESKTOP-LTS5E9G",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.7",
+    "lightgbm": "4.7.0",
+    "quick": false,
+    "rows": 3245856,
+    "n_features": 97,
+    "git_commit": "b85c76a",
+    "total_minutes": 30.1
+  },
+  "spike": {
+    "auroc": 0.9562453417468633,
+    "auprc": 0.8590355714422766,
+    "prevalence": 0.21219751238822937,
+    "threshold": 0.40786491835487665,
+    "sensitivity": 0.8027347732122712,
+    "specificity": 0.9271579671888672,
+    "ppv": 0.7480051675659245,
+    "alerts_per_patient_day": 1.5308161406319059,
+    "false_alert_points_per_patient_day": 1.9815951811328822,
+    "n": 346710,
+    "best_iteration": 705,
+    "train_seconds": 142.4,
+    "baseline_trend_auroc": 0.7098083979579659,
+    "baseline_trend_auprc": 0.43178922717084534,
+    "baseline_current_glucose_auroc": 0.7947928552027976,
+    "subgroups": {
+      "cohort=Normoglycemic": {
+        "auroc": 0.9616609428927237,
+        "sensitivity": 0.1410958904109589,
+        "n": 96980
+      },
+      "cohort=Prediabetes": {
+        "auroc": 0.9281931127360326,
+        "sensitivity": 0.5430193188607847,
+        "n": 92992
+      },
+      "cohort=T2D": {
+        "auroc": 0.9219119458545298,
+        "sensitivity": 0.8519562413414227,
+        "n": 156738
+      },
+      "setting=Rural": {
+        "auroc": 0.9599664201416601,
+        "sensitivity": 0.7922412937791448,
+        "n": 160031
+      },
+      "setting=Urban": {
+        "auroc": 0.952797557719444,
+        "sensitivity": 0.8100567683574099,
+        "n": 186679
+      },
+      "on SU/insulin": {
+        "auroc": 0.9171246047470868,
+        "n": 65018
+      },
+      "not on SU/insulin": {
+        "auroc": 0.9593229691786269,
+        "n": 281692
+      }
+    },
+    "event_detection": {
+      "events": 19997,
+      "detection_rate": 0.9471920788118218,
+      "median_lead_time_min": 120.0,
+      "mean_lead_time_min": 91.02792883163508
+    },
+    "calibration": [
+      {
+        "q": 0,
+        "pred": 0.0128,
+        "obs": 0.012500000186264515,
+        "n": 217986
+      },
+      {
+        "q": 1,
+        "pred": 0.1454,
+        "obs": 0.15449999272823334,
+        "n": 22126
+      },
+      {
+        "q": 2,
+        "pred": 0.2478,
+        "obs": 0.2563999891281128,
+        "n": 14780
+      },
+      {
+        "q": 3,
+        "pred": 0.3491,
+        "obs": 0.35199999809265137,
+        "n": 11961
+      },
+      {
+        "q": 4,
+        "pred": 0.4495,
+        "obs": 0.44780001044273376,
+        "n": 10959
+      },
+      {
+        "q": 5,
+        "pred": 0.5495,
+        "obs": 0.5483999848365784,
+        "n": 10521
+      },
+      {
+        "q": 6,
+        "pred": 0.651,
+        "obs": 0.6485999822616577,
+        "n": 10587
+      },
+      {
+        "q": 7,
+        "pred": 0.7511,
+        "obs": 0.7488999962806702,
+        "n": 12081
+      },
+      {
+        "q": 8,
+        "pred": 0.8521,
+        "obs": 0.8568999767303467,
+        "n": 14707
+      },
+      {
+        "q": 9,
+        "pred": 0.9545,
+        "obs": 0.9635000228881836,
+        "n": 21002
+      }
+    ],
+    "top_features": {
+      "hour": 1.0046,
+      "prof_future_max_tod": 0.8117,
+      "g_now": 0.5156,
+      "cohort": 0.2818,
+      "hba1c_mean": 0.2471,
+      "hour_sin": 0.2265,
+      "last_hba1c": 0.2138,
+      "diabetes_duration_yrs": 0.2105,
+      "staple": 0.1961,
+      "g_vs_profile": 0.177,
+      "prof_spike_rate_tod": 0.1672,
+      "min_since_meal": 0.1544,
+      "g_mean_24h": 0.1534,
+      "g_mean_6h": 0.1464,
+      "hour_cos": 0.1447
+    }
+  },
+  "severe": {
+    "auroc": 0.9668590725466923,
+    "auprc": 0.7511748622246108,
+    "prevalence": 0.08559799939393997,
+    "threshold": 0.26530762976084965,
+    "sensitivity": 0.7931283719249336,
+    "specificity": 0.946999975835488,
+    "ppv": 0.5834820919898211,
+    "alerts_per_patient_day": 1.2181525634761134,
+    "false_alert_points_per_patient_day": 2.1523999174028514,
+    "n": 452569,
+    "best_iteration": 689,
+    "train_seconds": 151.5,
+    "baseline_trend_auroc": 0.7885806237415396,
+    "baseline_trend_auprc": 0.3303314439464481,
+    "baseline_current_glucose_auroc": 0.8371263501825953,
+    "subgroups": {
+      "cohort=Normoglycemic": {
+        "auroc": 0.9916284073128552,
+        "sensitivity": 0.0,
+        "n": 97148
+      },
+      "cohort=Prediabetes": {
+        "auroc": 0.9641066444163437,
+        "sensitivity": 0.1825726141078838,
+        "n": 96995
+      },
+      "cohort=T2D": {
+        "auroc": 0.9399954319353985,
+        "sensitivity": 0.7970333038915156,
+        "n": 258426
+      },
+      "setting=Rural": {
+        "auroc": 0.9707207123398031,
+        "sensitivity": 0.7926215392767254,
+        "n": 201636
+      },
+      "setting=Urban": {
+        "auroc": 0.9636804197422062,
+        "sensitivity": 0.793452053635633,
+        "n": 250933
+      },
+      "on SU/insulin": {
+        "auroc": 0.9315357133462087,
+        "n": 122335
+      },
+      "not on SU/insulin": {
+        "auroc": 0.9757879422150492,
+        "n": 330234
+      }
+    },
+    "calibration": [
+      {
+        "q": 0,
+        "pred": 0.0078,
+        "obs": 0.00800000037997961,
+        "n": 371760
+      },
+      {
+        "q": 1,
+        "pred": 0.1445,
+        "obs": 0.15399999916553497,
+        "n": 19816
+      },
+      {
+        "q": 2,
+        "pred": 0.2471,
+        "obs": 0.250900000333786,
+        "n": 12111
+      },
+      {
+        "q": 3,
+        "pred": 0.3483,
+        "obs": 0.3359000086784363,
+        "n": 9320
+      },
+      {
+        "q": 4,
+        "pred": 0.4482,
+        "obs": 0.43549999594688416,
+        "n": 7919
+      },
+      {
+        "q": 5,
+        "pred": 0.5494,
+        "obs": 0.5266000032424927,
+        "n": 7074
+      },
+      {
+        "q": 6,
+        "pred": 0.6497,
+        "obs": 0.6363000273704529,
+        "n": 6486
+      },
+      {
+        "q": 7,
+        "pred": 0.7494,
+        "obs": 0.7347999811172485,
+        "n": 6346
+      },
+      {
+        "q": 8,
+        "pred": 0.8499,
+        "obs": 0.8514999747276306,
+        "n": 6305
+      },
+      {
+        "q": 9,
+        "pred": 0.9453,
+        "obs": 0.9581999778747559,
+        "n": 5432
+      }
+    ]
+  },
+  "hypo": {
+    "auroc": 0.9765777258425562,
+    "auprc": 0.46277636351459894,
+    "prevalence": 0.016290411353111267,
+    "threshold": 0.07677314817991701,
+    "sensitivity": 0.7994884910485933,
+    "specificity": 0.9646793741013135,
+    "ppv": 0.27264401901356244,
+    "alerts_per_patient_day": 0.6335009456274432,
+    "false_alert_points_per_patient_day": 1.6351226047849157,
+    "n": 480037,
+    "best_iteration": 200,
+    "train_seconds": 64.8,
+    "baseline_trend_auroc": 0.8973560423721924,
+    "baseline_trend_auprc": 0.10062169156136178,
+    "baseline_current_glucose_auroc": 0.9569891898392308,
+    "subgroups": {
+      "cohort=Normoglycemic": {
+        "auroc": 0.9320936706671675,
+        "sensitivity": 0.8293535235876529,
+        "n": 94145
+      },
+      "cohort=Prediabetes": {
+        "auroc": 0.963537653784019,
+        "sensitivity": 0.4111111111111111,
+        "n": 96924
+      },
+      "cohort=T2D": {
+        "auroc": 0.9880809305417517,
+        "sensitivity": 0.7934170636639237,
+        "n": 288968
+      },
+      "setting=Rural": {
+        "auroc": 0.9752687334871912,
+        "sensitivity": 0.8184494602551521,
+        "n": 211516
+      },
+      "setting=Urban": {
+        "auroc": 0.9773684129741304,
+        "sensitivity": 0.7788461538461539,
+        "n": 268521
+      },
+      "on SU/insulin": {
+        "auroc": 0.9883063171397193,
+        "n": 145530
+      },
+      "not on SU/insulin": {
+        "auroc": 0.9714511795177209,
+        "n": 334507
+      }
+    },
+    "event_detection": {
+      "events": 2269,
+      "detection_rate": 0.9532833847509916,
+      "median_lead_time_min": 120.0,
+      "mean_lead_time_min": 95.65880721220528
+    },
+    "calibration": [
+      {
+        "q": 0,
+        "pred": 0.0037,
+        "obs": 0.004100000020116568,
+        "n": 460500
+      },
+      {
+        "q": 1,
+        "pred": 0.1436,
+        "obs": 0.15639999508857727,
+        "n": 7950
+      },
+      {
+        "q": 2,
+        "pred": 0.2466,
+        "obs": 0.2635999917984009,
+        "n": 3923
+      },
+      {
+        "q": 3,
+        "pred": 0.3472,
+        "obs": 0.3490999937057495,
+        "n": 2558
+      },
+      {
+        "q": 4,
+        "pred": 0.4479,
+        "obs": 0.4377000033855438,
+        "n": 1974
+      },
+      {
+        "q": 5,
+        "pred": 0.5463,
+        "obs": 0.508400022983551,
+        "n": 1422
+      },
+      {
+        "q": 6,
+        "pred": 0.6483,
+        "obs": 0.6349999904632568,
+        "n": 1033
+      },
+      {
+        "q": 7,
+        "pred": 0.742,
+        "obs": 0.7512999773025513,
+        "n": 583
+      },
+      {
+        "q": 8,
+        "pred": 0.8251,
+        "obs": 0.9042999744415283,
+        "n": 94
+      }
+    ]
+  },
+  "fc30": {
+    "mae": 10.613096745137954,
+    "rmse": 14.409553042671428,
+    "mard_pct": 7.100265449855335,
+    "baseline_persistence_mae": 14.11889362335205,
+    "baseline_trend_mae": 18.751480102539062,
+    "clarke_zones_pct": {
+      "A": 96.26,
+      "B": 3.44,
+      "C": 0.0,
+      "D": 0.3,
+      "E": 0.0
+    },
+    "best_iteration": 2326,
+    "train_seconds": 297.3,
+    "n": 485735
+  },
+  "fc60": {
+    "mae": 13.900664432926973,
+    "rmse": 19.66212576980562,
+    "mard_pct": 9.220055327306023,
+    "baseline_persistence_mae": 21.341472625732422,
+    "baseline_trend_mae": 33.79635238647461,
+    "clarke_zones_pct": {
+      "A": 90.98,
+      "B": 8.36,
+      "C": 0.01,
+      "D": 0.65,
+      "E": 0.0
+    },
+    "best_iteration": 2994,
+    "train_seconds": 379.6,
+    "n": 484967
+  },
+  "fc90": {
+    "mae": 16.029925926745513,
+    "rmse": 22.813191874537477,
+    "mard_pct": 10.616764690152953,
+    "baseline_persistence_mae": 27.28285026550293,
+    "baseline_trend_mae": 48.999855041503906,
+    "clarke_zones_pct": {
+      "A": 87.47,
+      "B": 11.62,
+      "C": 0.05,
+      "D": 0.86,
+      "E": 0.0
+    },
+    "best_iteration": 2984,
+    "train_seconds": 357.9,
+    "n": 484312
+  },
+  "fc120": {
+    "mae": 17.275622989119146,
+    "rmse": 24.44197297324814,
+    "mard_pct": 11.473721108056829,
+    "baseline_persistence_mae": 31.657194137573242,
+    "baseline_trend_mae": 62.53833770751953,
+    "clarke_zones_pct": {
+      "A": 85.17,
+      "B": 13.78,
+      "C": 0.08,
+      "D": 0.95,
+      "E": 0.01
+    },
+    "best_iteration": 2932,
+    "train_seconds": 325.9,
+    "n": 483794
+  }
+}

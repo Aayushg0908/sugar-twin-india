@@ -3,7 +3,7 @@ Train and evaluate the LightGBM models of the digital twin.
 
 Models (all use the fused EHR + wearable features from build_features.py):
   spike    P(glucose > 180 mg/dL in the next 2 h | glucose now < 180)   <- primary alert
-  severe   P(glucose > 250 mg/dL in the next 2 h)
+  severe   P(glucose > 250 mg/dL in the next 2 h | glucose now < 250)
   hypo     P(glucose <  70 mg/dL for >= 10 min in the next 2 h | glucose now >= 70)
   fc30 .. fc120   glucose forecast 30 / 60 / 90 / 120 min ahead (predicts the change from now)
 

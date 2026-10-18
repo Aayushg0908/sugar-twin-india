@@ -12,7 +12,7 @@ Hidden simulator truth (twin parameters, true carbs, day context) is never used.
 
 Targets (next 2 hours):
   y_spike   glucose now < 180 and any reading > 180       (primary)
-  y_severe  any reading > 250
+  y_severe  glucose now < 250 and any reading > 250
   y_hypo    glucose now >= 70 and >= 10 min below 70
   g_p30 .. g_p120   glucose 30 / 60 / 90 / 120 min ahead  (forecast)
 
@@ -291,7 +291,7 @@ def build_chunk(pids, G, HR, ST, AS, ev, daily, ehr, every):
     enough = nvalid >= HORIZON // 2
     y = {}
     y["y_spike"] = np.where(enough & (g_now < 180), (fmax > 180).astype(np.float32), np.nan)
-    y["y_severe"] = np.where(enough, (fmax > 250).astype(np.float32), np.nan)
+    y["y_severe"] = np.where(enough & (g_now < 250), (fmax > 250).astype(np.float32), np.nan)
     y["y_hypo"] = np.where(enough & (g_now >= 70), sustained_low.astype(np.float32), np.nan)
     for lag in (6, 12, 18, 24):
         y[f"g_p{lag * STEP}"] = G[:, ts + lag]

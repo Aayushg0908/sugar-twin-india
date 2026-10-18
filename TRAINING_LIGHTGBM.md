@@ -77,7 +77,7 @@ It trains 7 models one after another and prints progress every 200 rounds:
 | Model | Predicts |
 |---|---|
 | `spike` | Glucose goes above 180 in the next 2 h (**main alert**) |
-| `severe` | Glucose goes above 250 in the next 2 h |
+| `severe` | Glucose goes above 250 in the next 2 h (from below 250) |
 | `hypo` | Glucose goes below 70 in the next 2 h |
 | `fc30`, `fc60`, `fc90`, `fc120` | Glucose value 30 / 60 / 90 / 120 min ahead |
 
