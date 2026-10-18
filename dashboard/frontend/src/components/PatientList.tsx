@@ -55,7 +55,7 @@ export default function PatientList({ patients, selected, onSelect }: {
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setFilter(f.key)}
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${filter === f.key ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${filter === f.key ? "bg-brand-600 text-[#fff]" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
               {f.label}
             </button>
           ))}

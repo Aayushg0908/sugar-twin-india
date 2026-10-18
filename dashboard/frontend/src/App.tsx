@@ -115,7 +115,7 @@ export default function App() {
                     hint={`Simulated now: ${hhmm(snap.time)}. The violet dashed line is the twin's forecast.`}
                     right={
                       <button onClick={() => setReveal(!reveal)}
-                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${reveal ? "bg-slate-800 text-white ring-slate-800" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"}`}>
+                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${reveal ? "bg-violet-600 text-[#fff] ring-violet-600" : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"}`}>
                         {reveal ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                         {reveal ? "Hide what happened" : "Reveal what really happened"}
                       </button>

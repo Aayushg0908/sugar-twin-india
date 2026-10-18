@@ -2,6 +2,7 @@ import { Area, Bar, BarChart, CartesianGrid, ComposedChart, Line, LineChart, Ref
 import { CheckCircle2, XCircle } from "lucide-react";
 import type { Accuracy, Summary } from "../api";
 import { COLORS, Stat, dayLabel } from "../ui";
+import { useChartTheme } from "../theme";
 
 const BANDS: { key: keyof Summary["cgm14"]["bands"]; label: string; color: string; target: string; ok: (v: number) => boolean }[] = [
   { key: "very_high", label: "Very high >250", color: COLORS.veryHigh, target: "< 5%", ok: (v) => v < 5 },
@@ -36,12 +37,13 @@ export function TimeInRange({ s }: { s: Summary }) {
 }
 
 export function DailyPattern({ s }: { s: Summary }) {
+  const th = useChartTheme();
   const data = s.agp.map((a) => ({ ...a, outer: [a.p5, a.p95], inner: [a.p25, a.p75] }));
   return (
     <div className="h-56">
       <ResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -14 }}>
-          <CartesianGrid stroke="#f1f5f9" vertical={false} />
+          <CartesianGrid stroke={th.grid} vertical={false} />
           <ReferenceArea y1={70} y2={180} fill={COLORS.inRange} fillOpacity={0.07} />
           <ReferenceLine y={180} stroke={COLORS.high} strokeDasharray="4 4" />
           <ReferenceLine y={70} stroke={COLORS.low} strokeDasharray="4 4" />
@@ -49,7 +51,7 @@ export function DailyPattern({ s }: { s: Summary }) {
           <YAxis domain={[40, 350]} ticks={[70, 180, 250]} width={46} />
           <Tooltip formatter={(v: number | number[], n: string) => [Array.isArray(v) ? `${Math.round(v[0])}–${Math.round(v[1])}` : Math.round(v),
             n === "outer" ? "5–95% of days" : n === "inner" ? "25–75% of days" : "Typical (median)"]}
-            labelFormatter={(h) => `${h}:00 – ${h}:59`} contentStyle={{ borderRadius: 12, fontSize: 12 }} />
+            labelFormatter={(h) => `${h}:00 – ${h}:59`} contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
           <Area dataKey="outer" stroke="none" fill={COLORS.brand} fillOpacity={0.12} isAnimationActive={false} />
           <Area dataKey="inner" stroke="none" fill={COLORS.brand} fillOpacity={0.28} isAnimationActive={false} />
           <Line dataKey="p50" stroke={COLORS.brand} strokeWidth={2.5} dot={false} isAnimationActive={false} />
@@ -60,6 +62,7 @@ export function DailyPattern({ s }: { s: Summary }) {
 }
 
 export function DailyTir({ s }: { s: Summary }) {
+  const th = useChartTheme();
   return (
     <div className="h-28">
       <ResponsiveContainer>
@@ -68,7 +71,7 @@ export function DailyTir({ s }: { s: Summary }) {
           <YAxis domain={[0, 100]} ticks={[70]} width={40} />
           <ReferenceLine y={70} stroke="#94a3b8" strokeDasharray="3 3" />
           <Tooltip formatter={(v: number) => [`${Math.round(v)}%`, "In range"]} labelFormatter={(d) => dayLabel(Number(d))}
-            contentStyle={{ borderRadius: 12, fontSize: 12 }} />
+            contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
           <Bar dataKey="tir" fill={COLORS.inRange} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
@@ -88,6 +91,7 @@ export function CgmStats({ s }: { s: Summary }) {
 }
 
 export function EhrPanel({ s }: { s: Summary }) {
+  const th = useChartTheme();
   const order = ["HbA1c", "Fasting plasma glucose", "LDL cholesterol", "Triglycerides", "eGFR (CKD-EPI 2021)", "Systolic blood pressure", "Body weight"];
   const labs = order.map((t) => s.labs.find((l) => l.test === t)).filter(Boolean) as Summary["labs"];
   const short: Record<string, string> = { "Fasting plasma glucose": "Fasting glucose", "eGFR (CKD-EPI 2021)": "eGFR (kidney)", "Systolic blood pressure": "BP (systolic)" };
@@ -109,7 +113,7 @@ export function EhrPanel({ s }: { s: Summary }) {
               <LineChart data={s.hba1c_history} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
                 <YAxis domain={["dataMin - 0.3", "dataMax + 0.3"]} hide />
                 <ReferenceLine y={7} stroke="#94a3b8" strokeDasharray="3 3" />
-                <Tooltip formatter={(v: number) => [`${v}%`, "HbA1c"]} labelFormatter={() => ""} contentStyle={{ borderRadius: 12, fontSize: 12 }} />
+                <Tooltip formatter={(v: number) => [`${v}%`, "HbA1c"]} labelFormatter={() => ""} contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
                 <Line dataKey="value" stroke="#e11d48" strokeWidth={2} dot={{ r: 2 }} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>

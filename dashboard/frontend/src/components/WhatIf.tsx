@@ -3,6 +3,7 @@ import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, Responsiv
 import { Footprints, Pill as PillIcon, RotateCcw, UtensilsCrossed } from "lucide-react";
 import { api, isoNaive, type Change, type WhatIfResult } from "../api";
 import { COLORS, hhmm } from "../ui";
+import { useChartTheme } from "../theme";
 
 export interface WhatIfState {
   meal_carbs: number;
@@ -58,6 +59,7 @@ export default function WhatIf({ pid, time, drugClasses, state, setState }: {
   pid: string; time: number; drugClasses: string[]; state: WhatIfState; setState: (s: WhatIfState) => void;
 }) {
   const [res, setRes] = useState<WhatIfResult | null>(null);
+  const th = useChartTheme();
   const set = (v: Partial<WhatIfState>) => setState({ ...state, ...v });
   const active = state.meal_carbs > 0 || state.walk_minutes > 0 || state.skip.length > 0;
 
@@ -150,18 +152,18 @@ export default function WhatIf({ pid, time, drugClasses, state, setState }: {
           {res && (
             <ResponsiveContainer>
               <LineChart data={res.curve} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
-                <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                <CartesianGrid stroke={th.grid} vertical={false} />
                 <ReferenceArea y1={70} y2={180} fill={COLORS.inRange} fillOpacity={0.07} />
                 <ReferenceLine y={180} stroke={COLORS.high} strokeDasharray="4 4" />
                 <ReferenceLine y={70} stroke={COLORS.low} strokeDasharray="4 4" />
-                <ReferenceLine x={res.curve[24]?.t} stroke="#cbd5e1" label={{ value: "2 h", fontSize: 10, fill: "#94a3b8", position: "top" }} />
+                <ReferenceLine x={res.curve[24]?.t} stroke={th.grid} label={{ value: "2 h", fontSize: 10, fill: "#94a3b8", position: "top" }} />
                 <XAxis dataKey="t" type="number" domain={["dataMin", "dataMax"]} tickFormatter={hhmm} scale="time"
                   ticks={res.curve.filter((_, i) => i % 6 === 0).map((c) => c.t)} />
                 <YAxis domain={[40, yMax]} ticks={[70, 180, 250]} width={48} />
                 <Tooltip labelFormatter={(v) => hhmm(Number(v))}
                   formatter={(v: number, n: string) => [`${Math.round(v)} mg/dL`, n === "base" ? "If nothing changes" : n === "reference" ? (state.refLabel ?? "Reference") : "With your changes"]}
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                <Line dataKey="base" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" dot={false} isAnimationActive={false} />
+                  contentStyle={{ borderRadius: 12, fontSize: 12, ...th.tooltip }} labelStyle={{ color: th.muted }} />
+                <Line dataKey="base" stroke={th.base} strokeWidth={2} strokeDasharray="5 4" dot={false} isAnimationActive={false} />
                 {s?.reference && <Line dataKey="reference" stroke="#d97706" strokeWidth={2} strokeDasharray="2 3" dot={false} isAnimationActive={false} />}
                 <Line dataKey="scenario" stroke={COLORS.brand} strokeWidth={3} dot={false} isAnimationActive={false} />
               </LineChart>
