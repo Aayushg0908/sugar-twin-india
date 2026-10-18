@@ -140,10 +140,11 @@ def gru_sequence(sim, events):
 
 
 def run_models(rows, seq):
-    preds = rows[["patient_id", "timestamp", "g_now", "y_spike", "y_hypo", "y_severe", "g_p60", "g_p120"]].copy()
+    preds = rows[["patient_id", "timestamp", "g_now", "y_spike", "y_hypo", "y_severe", "g_p30", "g_p60", "g_p90", "g_p120"]].copy()
     feat_cols = lgb.Booster(model_file=str(ROOT / "models" / "lightgbm" / "spike.txt")).feature_name()
     X = rows[feat_cols]
-    lg = {k: lgb.Booster(model_file=str(ROOT / "models" / "lightgbm" / f"{k}.txt")).predict(X) for k in ("spike", "hypo", "severe", "fc60", "fc120")}
+    lg = {k: lgb.Booster(model_file=str(ROOT / "models" / "lightgbm" / f"{k}.txt")).predict(X)
+          for k in ("spike", "hypo", "severe", "fc30", "fc60", "fc90", "fc120")}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ck = torch.load(ROOT / "models" / "gru" / "gru.pt", map_location=device, weights_only=False)
     tg.SEQ_LEN = ck["seq_len"]
@@ -156,7 +157,8 @@ def run_models(rows, seq):
     c, r = tg.predict(model, torch.tensor(seq, device=device, dtype=torch.float16), tens)
     g = rows.g_now.to_numpy()
     for name, lgb_p, gru_p in [("spike", lg["spike"], c[:, 0]), ("severe", lg["severe"], c[:, 1]), ("hypo", lg["hypo"], c[:, 2]),
-                               ("fc60", g + lg["fc60"], g + r[:, 1]), ("fc120", g + lg["fc120"], g + r[:, 3])]:
+                               ("fc30", g + lg["fc30"], g + r[:, 0]), ("fc60", g + lg["fc60"], g + r[:, 1]),
+                               ("fc90", g + lg["fc90"], g + r[:, 2]), ("fc120", g + lg["fc120"], g + r[:, 3])]:
         preds[f"{name}_lgb"], preds[f"{name}_gru"], preds[name] = lgb_p, gru_p, (lgb_p + gru_p) / 2
     thr = {}
     for k in ("spike", "hypo", "severe"):
@@ -279,6 +281,11 @@ def main():
         wi.append({"question": name, "peak": float(d.max()), "peak_min": int(np.argmax(d)) * 5, "at_2h": float(d[24])})
     for r in wi:
         print(f"  what-if {r['question']:40s} peak {r['peak']:+5.0f} mg/dL at {r['peak_min']} min, at 2 h {r['at_2h']:+5.0f}")
+
+    # files the dashboard uses to show her like any other patient
+    preds.to_csv(DATA_OUT / "predictions.csv", index=False)
+    rows.to_parquet(DATA_OUT / "features.parquet", index=False)
+    (DATA_OUT / "twin_fitted.json").write_text(json.dumps({"patient_id": PID, **T["twin"], "n_meals": T["raw"]["n_meals"]}, indent=2))
 
     summary = {"persona": PERSONA, "seed": seed, "hba1c": float(feats.last_hba1c.iloc[0]),
                "active_meds": sorted(meds[meds.end_date.isna()].drug), "diagnoses": sorted(dx.description), "cgm": cgm_stats,
