@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { BarChart3, Brain, CalendarDays, Eye, EyeOff, FlaskConical, LineChart as LineIcon, ShieldCheck, Sparkles, Stethoscope, Wand2 } from "lucide-react";
+import { BarChart3, Brain, ClipboardList, CalendarDays, Eye, EyeOff, FlaskConical, LineChart as LineIcon, ShieldCheck, Sparkles, Stethoscope, Wand2 } from "lucide-react";
 import { api, type Meta, type PatientRow, type Snapshot, type Suggestion, type Summary } from "./api";
 import TopBar from "./components/TopBar";
 import PatientList from "./components/PatientList";
 import GlucoseChart, { ChartLegend } from "./components/GlucoseChart";
 import { CurrentGlucose, RiskCards, Suggestions } from "./components/RiskPanel";
 import WhatIf, { EMPTY_WHATIF, type WhatIfState } from "./components/WhatIf";
-import { ProfileCard, TwinCard } from "./components/Profile";
+import { ProfileCard, TwinCard, twinSentence } from "./components/Profile";
+import ClinicalSummary from "./components/ClinicalSummary";
 import { AccuracyStrip, CgmStats, DailyPattern, DailyTir, EhrPanel, TimeInRange } from "./components/Overview";
 import { Card, hhmm } from "./ui";
 
@@ -110,6 +111,11 @@ export default function App() {
               <>
                 <Card><ProfileCard s={summary} /></Card>
 
+                <Card title="Clinical summary" icon={<ClipboardList className="h-4 w-4" />}
+                  hint="Read this first. Details for each point are further down the page.">
+                  <ClinicalSummary now={snap.headline} flags={summary.flags} />
+                </Card>
+
                 <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
                   <Card title="Glucose: last 12 hours and next 2 hours" icon={<LineIcon className="h-4 w-4" />}
                     hint={`Simulated now: ${hhmm(snap.time)}. The violet dashed line is the twin's forecast.`}
@@ -140,7 +146,7 @@ export default function App() {
                   <Card title="This patient's twin" icon={<Brain className="h-4 w-4" />}
                     hint="Learned from the first week of logged meals and CGM, then checked on new meals.">
                     <TwinCard s={summary} />
-                    <p className="mt-3 text-sm text-slate-600">{summary.twin.description}.</p>
+                    <p className="mt-3 text-sm text-slate-600">{twinSentence(summary)}</p>
                   </Card>
                 </div>
 

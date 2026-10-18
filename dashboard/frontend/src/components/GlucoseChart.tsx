@@ -30,7 +30,8 @@ export default function GlucoseChart({ snap, reveal }: { snap: Snapshot; reveal:
   for (let t = Math.ceil(start / 7200e3) * 7200e3; t <= end; t += 7200e3) ticks.push(t);
   const yMax = Math.max(300, ...data.map((d) => Math.max(d.g ?? 0, d.band?.[1] ?? 0, d.actual ?? 0)) ) + 10;
 
-  const shown = snap.events.filter((e) => reveal || !e.future);
+  // the app only knows logged meals; unlogged ones (simulator truth) appear only in "reveal" mode
+  const shown = snap.events.filter((e) => reveal || (!e.future && (e.type !== "meal" || e.logged)));
   const meals = shown.filter((e) => e.type === "meal");
   const meds = shown.filter((e) => e.type === "medication");
   const walks = shown.filter((e) => e.type === "exercise");
@@ -64,10 +65,22 @@ export default function GlucoseChart({ snap, reveal }: { snap: Snapshot; reveal:
 
           {meals.map((e) => (
             <ReferenceDot key={`m${e.t}`} x={e.t} y={48} r={9} fill={e.logged ? th.mealFill : th.unloggedFill} stroke={e.logged ? th.mealStroke : th.unloggedStroke}
-              label={{ value: e.logged ? `${e.carbs ?? "?"}g` : "?", position: "top", fontSize: 10, fill: th.mealText }} />
+              label={{ value: e.logged ? `${e.carbs ?? "?"}g` : "?", position: "top", fontSize: 10, fill: th.mealText }}
+              shape={(p: { cx?: number; cy?: number }) => (
+                <g style={{ cursor: "help" }}>
+                  <circle cx={p.cx} cy={p.cy} r={9} fill={e.logged ? th.mealFill : th.unloggedFill} stroke={e.logged ? th.mealStroke : th.unloggedStroke} />
+                  <title>{`${e.label}${e.carbs ? `, ${Math.round(e.carbs)} g carbs` : ""} at ${hhmm(e.t)}${e.logged ? "" : " (not logged by the patient)"}`}</title>
+                </g>
+              )} />
           ))}
           {meds.map((e) => (
-            <ReferenceDot key={`d${e.t}${e.label}`} x={e.t} y={yMax - 12} r={5} fill={e.taken ? "#16a34a" : "#dc2626"} stroke={th.surface} />
+            <ReferenceDot key={`d${e.t}${e.label}`} x={e.t} y={yMax - 12} r={6}
+              shape={(p: { cx?: number; cy?: number }) => (
+                <g style={{ cursor: "help" }}>
+                  <circle cx={p.cx} cy={p.cy} r={6} fill={e.logged ? "#16a34a" : "#dc2626"} stroke={th.surface} strokeWidth={1.5} />
+                  <title>{`${e.label} at ${hhmm(e.t)}: ${e.logged ? "confirmed in app" : "not confirmed"}`}</title>
+                </g>
+              )} />
           ))}
           {walks.map((e) => (
             <ReferenceArea key={`w${e.t}`} x1={e.t} x2={e.t + (e.minutes ?? 20) * 60e3} y1={40} y2={60} fill="#0ea5e9" fillOpacity={0.35} />
@@ -83,15 +96,14 @@ export function ChartLegend({ reveal }: { reveal: boolean }) {
     <span className="flex items-center gap-1.5">{swatch}{label}</span>
   );
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+      <span className="text-slate-400">Hover a marker for details ·</span>
       {item(<span className="h-0.5 w-5 bg-slate-700" />, "Measured (CGM)")}
-      {item(<span className="h-0.5 w-5 border-t-2 border-dashed border-violet-600" />, "Twin forecast")}
-      {item(<span className="h-3 w-5 rounded bg-violet-200" />, "Likely range")}
+      {item(<span className="h-3 w-5 rounded border-t-2 border-dashed border-violet-600 bg-violet-200" />, "Forecast + likely range")}
       {reveal && item(<span className="h-0.5 w-5 bg-slate-400" />, "What really happened")}
       {item(<span className="h-3 w-5 rounded bg-green-100" />, "Target 70–180")}
-      {item(<span className="h-3 w-3 rounded-full border border-amber-600 bg-amber-100" />, "Meal (g carbs, ? = not logged)")}
-      {item(<span className="h-2.5 w-2.5 rounded-full bg-green-600" />, "Dose taken")}
-      {item(<span className="h-2.5 w-2.5 rounded-full bg-red-600" />, "Dose missed")}
+      {item(<span className="h-3 w-3 rounded-full border border-amber-600 bg-amber-100" />, "Meal (g carbs)")}
+      {item(<><span className="h-2.5 w-2.5 rounded-full bg-green-600" /><span className="-ml-1 h-2.5 w-2.5 rounded-full bg-red-600" /></>, "Dose confirmed / not confirmed")}
       {item(<span className="h-3 w-5 rounded bg-sky-300" />, "Exercise")}
     </div>
   );

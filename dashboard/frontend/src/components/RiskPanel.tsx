@@ -1,13 +1,8 @@
 import { AlertTriangle, ArrowDownCircle, Flame, Lightbulb } from "lucide-react";
-import type { RiskKey, Snapshot, Suggestion } from "../api";
+import type { Risk, Snapshot, Suggestion } from "../api";
 import { Pill, TrendIcon, glucoseColor, glucoseWord, levelStyle, trendWord } from "../ui";
 
-const META: Record<RiskKey, { title: string; what: string; now: string; icon: React.ReactNode }> = {
-  spike: { title: "Spike", what: "above 180 in the next 2 h", now: "Already above 180", icon: <AlertTriangle className="h-4 w-4" /> },
-  severe: { title: "Severe high", what: "above 250 in the next 2 h", now: "Already above 250", icon: <Flame className="h-4 w-4" /> },
-  hypo: { title: "Low sugar", what: "below 70 in the next 2 h", now: "Already below 70", icon: <ArrowDownCircle className="h-4 w-4" /> },
-};
-const LEVEL_WORD = { high: "High risk", medium: "Watch", low: "Low risk", now: "Happening now" };
+const LEVEL_WORD = { high: "Likely", medium: "Possible", low: "Unlikely", now: "Happening now" };
 const BAR = { high: "bg-red-500", medium: "bg-amber-400", low: "bg-emerald-500", now: "bg-violet-500" };
 
 export function CurrentGlucose({ snap }: { snap: Snapshot }) {
@@ -31,42 +26,56 @@ export function CurrentGlucose({ snap }: { snap: Snapshot }) {
   );
 }
 
+function RiskCard({ icon, title, risk, what, nowText, extra }: {
+  icon: React.ReactNode; title: string; risk: Risk; what: string; nowText: string; extra?: React.ReactNode;
+}) {
+  const width = Math.min(100, (risk.p / Math.max(risk.threshold * 1.6, 0.01)) * 100);
+  const urgent = risk.level === "high" || risk.level === "now";
+  return (
+    <div className={`rounded-2xl p-3.5 ring-1 ring-inset ${urgent ? "bg-red-50 ring-red-200" : "bg-white ring-slate-200"}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-bold text-slate-800">{icon}{title}</div>
+        <Pill className={levelStyle[risk.level]}>{LEVEL_WORD[risk.level]}</Pill>
+      </div>
+      <div className="mt-1 text-xs text-slate-500">
+        {risk.level === "now" ? nowText : <>{what} <span className="text-slate-400">({Math.round(risk.p * 100)}% chance)</span></>}
+      </div>
+      {risk.level !== "now" && (
+        <div className="relative mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+          <div className={`h-full rounded-full ${BAR[risk.level]}`} style={{ width: `${width}%` }} />
+          <div className="absolute top-0 h-full w-0.5 bg-slate-500" style={{ left: `${(1 / 1.6) * 100}%` }} title="Alert threshold" />
+        </div>
+      )}
+      {extra}
+      {risk.reasons.length > 0 && (risk.level === "high" || risk.level === "medium") && (
+        <ul className="mt-2.5 space-y-0.5">
+          {risk.reasons.slice(0, 3).map((x) => (
+            <li key={x.text} className="flex gap-1.5 text-xs text-slate-600"><span className="text-slate-400">•</span>{x.text}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Low sugar first (more dangerous), then one combined high-sugar card (above 180 / above 250). */
 export function RiskCards({ snap }: { snap: Snapshot }) {
-  const order: RiskKey[] = ["spike", "hypo", "severe"];
+  const { spike, severe, hypo } = snap.risks;
+  const highMain = severe.level === "high" || severe.level === "now" ? severe : spike;
+  const severeLine = highMain === spike && spike.level !== "now" && (
+    <div className="mt-2 flex items-center justify-between rounded-lg bg-slate-50 px-2.5 py-1 text-xs">
+      <span className="text-slate-500">Above 250 (severe)</span>
+      <Pill className={levelStyle[severe.level]}>{LEVEL_WORD[severe.level]}</Pill>
+    </div>
+  );
   return (
     <div className="space-y-3">
-      {order.map((k) => {
-        const r = snap.risks[k];
-        const m = META[k];
-        const width = Math.min(100, (r.p / Math.max(r.threshold * 1.6, 0.01)) * 100);
-        return (
-          <div key={k} className={`rounded-2xl p-3.5 ring-1 ring-inset ${r.level === "high" ? "bg-red-50/60 ring-red-200" : "bg-white ring-slate-200"}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-bold text-slate-800">{m.icon}{m.title}</div>
-              <Pill className={levelStyle[r.level]}>{LEVEL_WORD[r.level]}</Pill>
-            </div>
-            <div className="mt-1 text-xs text-slate-500">
-              {r.level === "now" ? m.now : <>Chance of going <b>{m.what}</b>: <b className="text-slate-700">{Math.round(r.p * 100)}%</b></>}
-            </div>
-            {r.level !== "now" && (
-              <div className="relative mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div className={`h-full rounded-full ${BAR[r.level]}`} style={{ width: `${width}%` }} />
-                <div className="absolute top-0 h-full w-0.5 bg-slate-500" style={{ left: `${(1 / 1.6) * 100}%` }} title="Alert threshold" />
-              </div>
-            )}
-            {r.reasons.length > 0 && (r.level === "high" || r.level === "medium") && (
-              <div className="mt-2.5">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Why</div>
-                <ul className="mt-1 space-y-0.5">
-                  {r.reasons.slice(0, 3).map((x) => (
-                    <li key={x.text} className="flex gap-1.5 text-xs text-slate-600"><span className="text-slate-300">•</span>{x.text}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        );
-      })}
+      <RiskCard icon={<ArrowDownCircle className="h-4 w-4" />} title="Low sugar" risk={hypo}
+        what="Going below 70 in the next 2 h" nowText="Below 70 right now: treat immediately" />
+      <RiskCard icon={highMain === severe ? <Flame className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+        title={highMain === severe ? "High sugar (above 250)" : "High sugar"} risk={highMain}
+        what={highMain === severe ? "Going above 250 in the next 2 h" : "Going above 180 in the next 2 h"}
+        nowText={highMain === severe ? "Above 250 right now" : "Above 180 right now"} extra={severeLine} />
     </div>
   );
 }

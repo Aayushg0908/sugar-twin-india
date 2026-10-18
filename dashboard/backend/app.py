@@ -26,7 +26,7 @@ from pydantic import BaseModel
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from twin_simulator import PatientTwin  # noqa: E402
+from twin_simulator import PatientTwin, simulate  # noqa: E402
 
 DATA, EHR, W, RES, NEW = ROOT / "data", ROOT / "data" / "ehr", ROOT / "data" / "wearable", ROOT / "results", ROOT / "data" / "new_patient"
 START = pd.Timestamp("2026-09-17")
@@ -208,92 +208,77 @@ def need(pid):
 # --------------------------------------------------------------------------
 # Plain-language reasons from SHAP contributions
 # --------------------------------------------------------------------------
-def reason_text(f, v, row):
+def reason_text(f, v, row, kind):
+    """Turn one model feature into a short reason a doctor can act on. Returns (group, text) or (group, None)
+    for features that matter to the model but give the doctor nothing to act on (time of day, diagnosis, BMI...)."""
     if v is None or (isinstance(v, float) and not np.isfinite(v)):
-        return None, None
-    fam = f
-    if f in ("g_delta_15", "g_delta_30", "g_delta_60", "g_delta_120", "g_accel_15"):
-        mins = {"g_delta_15": 15, "g_delta_30": 30, "g_delta_60": 60, "g_delta_120": 120}.get(f)
-        if f == "g_accel_15":
-            return "trend", ("Rise is speeding up" if v > 0 else "Rise is slowing down")
-        return "trend", f"Glucose {'up' if v > 0 else 'down'} {abs(v):.0f} mg/dL in last {mins} min"
+        return f, None
+    if f in ("g_delta_15", "g_delta_30", "g_delta_60", "g_delta_120"):
+        mins = int(f.split("_")[-1])
+        if abs(v) < 8:
+            return "trend", None
+        return "trend", f"Glucose {'rising' if v > 0 else 'falling'}: {'+' if v > 0 else '-'}{abs(v):.0f} mg/dL in {mins} min"
+    if f == "g_accel_15":
+        return "trend", ("Rise is speeding up" if v > 3 else "Fall is speeding up" if v < -3 else None)
     if f == "g_now":
-        return "level", f"Glucose now {v:.0f} mg/dL"
-    if f.startswith(("g_mean", "g_max", "g_min", "g_std")):
-        span = f.split("_")[-1]
-        kind = {"mean": "Average", "max": "Highest", "min": "Lowest", "std": "Swings"}[f.split("_")[1]]
-        return "level", (f"{kind} glucose in last {span}: {v:.0f} mg/dL" if kind != "Swings" else f"Glucose swinging a lot in last {span}")
-    if f == "g_tar_6h":
-        return "level", f"{v * 100:.0f}% of last 6 h above 180"
-    if f == "g_tir_6h":
-        return "level", f"Only {v * 100:.0f}% of last 6 h in range" if v < 0.7 else f"{v * 100:.0f}% of last 6 h in range"
-    if f in ("min_since_meal",):
-        return "meal", "No meal logged in the last 12 h" if v >= 700 else f"Meal logged {v:.0f} min ago"
-    if f in ("last_meal_carbs", "carbs_1h", "carbs_3h", "carbs_today"):
-        span = {"last_meal_carbs": "last meal", "carbs_1h": "last 1 h", "carbs_3h": "last 3 h", "carbs_today": "today"}[f]
-        return "meal", f"{v:.0f} g carbs logged ({span})"
-    if f == "last_meal_gi":
-        return "meal", {2: "Last meal was high-GI (rice / idli / sweets)", 1: "Last meal was medium-GI", 0: "Last meal was low-GI"}.get(int(round(v)))
-    if f in ("doses_logged_today", "min_since_dose_logged", "prescribed_doses_per_day"):
-        pres = row.get("prescribed_doses_per_day", np.nan)
-        if f == "min_since_dose_logged":
-            return "meds", "No diabetes dose logged in 24 h" if v >= 1400 else f"Last dose logged {v / 60:.1f} h ago"
-        if np.isfinite(pres) and pres > 0:
-            return "meds", f"{row.get('doses_logged_today', 0):.0f} of {pres:.0f} daily doses logged so far"
-        return "meds", "No glucose-lowering medicine"
-    if f.startswith("prof_"):
-        if f == "prof_spike_rate_tod":
-            return "habit", f"Went above 180 around this time on {v * 100:.0f}% of past days"
-        if f == "prof_glucose_tod":
-            return "habit", f"Usual glucose at this time: {v:.0f} mg/dL"
-        return "habit", f"Usual 2-h peak from this time: {v:.0f} mg/dL"
+        if kind == "hypo":
+            return "level", (f"Glucose already fairly low ({v:.0f} mg/dL)" if v < 110 else None)
+        return "level", (f"Glucose already {v:.0f} mg/dL" if v >= 150 else None)
+    if f.startswith(("g_mean", "g_max", "g_tar")) and kind != "hypo":
+        mean6 = row.get("g_mean_6h", np.nan)
+        return "level", (f"High for hours (average {mean6:.0f} in last 6 h)" if np.isfinite(mean6) and mean6 > 180 else None)
+    if f.startswith(("g_min", "g_std")) and kind == "hypo":
+        mn = row.get("g_min_3h", np.nan)
+        return "level", (f"Dipped to {mn:.0f} mg/dL in the last 3 h" if np.isfinite(mn) and mn < 90 else "Glucose swinging a lot")
+    if f == "min_since_meal":
+        if kind == "hypo":
+            return "meal", ("No meal logged for over 5 h" if v >= 300 else None)
+        return "meal", (f"Ate {v:.0f} min ago" if v < 150 else None)
+    if f in ("last_meal_carbs", "carbs_1h", "carbs_3h"):
+        c = row.get("carbs_3h", v)
+        if kind == "hypo":
+            return "meal", ("Little food logged in the last 3 h" if c < 20 else None)
+        return "meal", (f"{c:.0f} g carbs eaten in the last 3 h" if c >= 30 else None)
+    if f == "last_meal_gi" and kind != "hypo":
+        return "meal", ("Last meal was high-GI (rice / idli / sweets)" if round(v) == 2 else None)
+    if f in ("doses_logged_today", "min_since_dose_logged"):
+        pres = row.get("prescribed_doses_per_day", 0)
+        done = row.get("doses_logged_today", 0)
+        if kind != "hypo" and pres and done < pres and row.get("hour", 0) >= 10:
+            return "meds", f"Only {done:.0f} of {pres:.0f} diabetes doses confirmed today"
+        return "meds", None
+    if f == "prof_spike_rate_tod" and kind != "hypo":
+        return "habit", (f"Usually goes above 180 around this time ({v * 100:.0f}% of days)" if v >= 0.3 else None)
+    if f == "prof_future_max_tod" and kind != "hypo":
+        return "habit", (f"Usually peaks near {v:.0f} after this time of day" if v > 170 else None)
     if f == "g_vs_profile":
-        return "habit", f"{abs(v):.0f} mg/dL {'above' if v > 0 else 'below'} usual for this time"
-    if f in ("hour", "hour_sin", "hour_cos"):
-        return "time", f"Time of day ({int(row.get('hour', 0)):02d}:{int(round(row.get('hour', 0) % 1 * 60)):02d})"
-    if f == "weekend":
-        return "time", "Weekend" if v else "Weekday"
-    if f in ("sleep_hours_last_night", "sleep_eff_last_night"):
-        return "sleep", f"Slept {row.get('sleep_hours_last_night', v):.1f} h last night"
-    if f in ("hrv_last_night", "resting_hr_last_night"):
-        return "sleep", f"Overnight HRV {row.get('hrv_last_night', np.nan):.0f} ms / resting HR {row.get('resting_hr_last_night', np.nan):.0f}"
-    if f.startswith("steps") or f in ("min_since_exercise", "exercise_min_3h"):
-        if f == "min_since_exercise":
-            return "activity", "No exercise in the last 24 h" if v >= 1400 else f"Exercised {v / 60:.1f} h ago"
-        if f == "exercise_min_3h":
-            return "activity", f"{v:.0f} min exercise in last 3 h"
-        span = f.split("_")[-1]
-        return "activity", f"{v:.0f} steps ({span.replace('yesterday', 'yesterday')})"
-    if f.startswith("hr_"):
-        return "activity", f"Heart rate {row.get('hr_15m', v):.0f} bpm"
-    if f in ("last_hba1c", "hba1c_mean", "hba1c_change"):
-        return "ehr", f"HbA1c {row.get('last_hba1c', v):.1f}%"
-    if f == "on_sulfonylurea" and v:
-        return "ehr", "On sulfonylurea (can cause lows)"
-    if f == "on_basal_insulin" and v:
-        return "ehr", "On basal insulin"
-    if f == "diabetes_duration_yrs":
-        return "ehr", f"Diabetes for {v:.0f} years"
-    if f in ("bmi", "waist_cm"):
-        return "ehr", f"BMI {row.get('bmi', v):.1f}"
-    if f == "cohort":
-        return "ehr", {0: "No diabetes", 1: "Prediabetes", 2: "Type 2 diabetes"}.get(int(v))
-    return fam, None
+        return "habit", (f"{abs(v):.0f} mg/dL {'higher' if v > 0 else 'lower'} than usual for this time" if abs(v) >= 20 else None)
+    if f == "sleep_hours_last_night":
+        return "sleep", (f"Short sleep last night ({v:.1f} h)" if v < 6 else None)
+    if f in ("min_since_exercise", "exercise_min_3h", "steps_30m", "steps_1h") and kind == "hypo":
+        ex = row.get("exercise_min_3h", 0)
+        return "activity", (f"Exercised {ex:.0f} min in the last 3 h" if ex > 0 else None)
+    if f in ("steps_1h", "steps_3h") and kind != "hypo":
+        return "activity", (f"Inactive: {row.get('steps_1h', v):.0f} steps in the last hour" if row.get("steps_1h", v) < 300 else None)
+    if f == "on_sulfonylurea" and v and kind == "hypo":
+        return "drug", "On a sulfonylurea (can cause lows)"
+    if f == "on_basal_insulin" and v and kind == "hypo":
+        return "drug", "On basal insulin"
+    return f, None
 
 
-def explain(pid, t, kind, top=4):
+def explain(pid, t, kind, top=3):
     feats = store.features[pid]
     if t not in feats.index:
         return []
     row = feats.loc[t]
     contrib = store.boosters[kind].predict(row[store.feat_cols].to_frame().T.astype(float), pred_contrib=True)[0][:-1]
-    order = np.argsort(-contrib)
     out, seen = [], set()
     rowd = row.to_dict()
-    for i in order:
+    for i in np.argsort(-contrib)[:25]:                    # look deeper, keep only actionable reasons
         if contrib[i] <= 0 or len(out) >= top:
             break
-        fam, text = reason_text(store.feat_cols[i], rowd[store.feat_cols[i]], rowd)
+        fam, text = reason_text(store.feat_cols[i], rowd[store.feat_cols[i]], rowd, kind)
         if text and fam not in seen:
             seen.add(fam)
             out.append({"text": text, "weight": round(float(contrib[i]), 3), "group": fam})
@@ -341,11 +326,19 @@ def patients(t: str | None = None):
         valid = g14[np.isfinite(g14)]
         hba1c = store.demo_hba1c if pid == DEMO_ID else store.ehr_feats.loc[pid, "last_hba1c"]
         risks = {k: float(pr[f"p_{k}"]) for k in ("spike", "severe", "hypo")}
-        score = max(risks["spike"] / store.thr["spike"], risks["hypo"] / store.thr["hypo"])
+        levels = {k: risk_level(v, store.thr[k]) for k, v in risks.items()}
+        # brief dips near 70 are normal without diabetes: low-sugar alerts are for people with diabetes
+        diabetic = info.cohort == "T2D"
+        if not diabetic:
+            levels["hypo"] = "low" if not (np.isfinite(g) and g < 54) else "high"
+        urgency = ("urgent" if levels["hypo"] == "high" or levels["severe"] == "high" or (diabetic and np.isfinite(g) and g < 70)
+                   else "watch" if levels["spike"] == "high" else "ok")
+        score = max(1.5 * risks["hypo"] / store.thr["hypo"] * diabetic, 1.2 * risks["severe"] / store.thr["severe"],
+                    risks["spike"] / store.thr["spike"]) + {"urgent": 10, "watch": 5, "ok": 0}[urgency]
         out.append({"id": pid, "name": info["name"], "age": int(info.age), "sex": info.sex, "cohort": info.cohort,
                     "hba1c": clean(hba1c), "glucose": clean(g), "trend": trend_arrow(d15),
                     "risks": {k: round(v, 3) for k, v in risks.items()},
-                    "levels": {k: risk_level(v, store.thr[k]) for k, v in risks.items()},
+                    "levels": levels, "urgency": urgency,
                     "tir14": round(float(((valid >= 70) & (valid <= 180)).mean() * 100), 1), "score": round(score, 3)})
     out.sort(key=lambda r: (r["id"] != DEMO_ID, -r["score"]))
     return {"time": ms(t), "patients": out}
@@ -382,6 +375,7 @@ def summary(pid: str):
     tw = store.twin(pid)
     tau, p10, w = store.twin_params[pid]
     pop = store.twin_pop
+    cv = float(valid.std() / valid.mean() * 100)
     return {
         "id": pid, "name": info["name"], "age": int(info.age), "sex": info.sex, "cohort": info.cohort, "region": info.region,
         "setting": info.setting, "bmi": clean(info.bmi), "diet": info.diet, "staple": info.staple, "activity": info.activity_level,
@@ -399,8 +393,64 @@ def summary(pid: str):
                  "description": tw.describe(),
                  "carb_label": "high" if p10 > pop[1] * 1.2 else "low" if p10 < pop[1] * 0.8 else "average",
                  "recovery_label": "slow" if tau > pop[0] * 1.2 else "fast" if tau < pop[0] * 0.8 else "average",
-                 "walk_label": "strong" if w > 1.2 else "weak" if w < 0.8 else "average"},
+                 "walk_label": "strong" if w > 1.2 else "weak" if w < 0.8 else "average",
+                 "rise_per_roti": round(p10 * 1.5), "pop_rise_per_roti": round(pop[1] * 1.5),
+                 "recovery_hours": round(recovery_minutes(tau, p10, w) / 60, 1),
+                 "pop_recovery_hours": round(recovery_minutes(*pop) / 60, 1)},
+        "flags": clinical_flags(pid, g, bands, cv, act),
     }
+
+
+def recovery_minutes(tau, p10, w):
+    """Minutes after a typical 60 g meal until glucose is back within 20% of its rise."""
+    curve = simulate([(0, 60.0, 1)], np.zeros(96), 96, tau, p10, w)
+    k = int(np.argmax(curve))
+    after = np.where(curve[k:] < 0.2 * curve[k])[0]
+    return float((k + (after[0] if len(after) else 96 - k)) * STEP)
+
+
+WINDOWS = [("night (11 pm–6 am)", list(range(23, 24)) + list(range(0, 6))), ("morning (6–11 am)", range(6, 11)),
+           ("afternoon (11 am–5 pm)", range(11, 17)), ("evening (5–11 pm)", range(17, 23))]
+
+
+def clinical_flags(pid, g, bands, cv, act):
+    """14-day findings a doctor should see first, most serious first."""
+    pct = {k: float(v) * 100 for k, v in bands.items()}
+    tbr, vlow, tir, vhigh = pct["low"] + pct["very_low"], pct["very_low"], pct["in_range"], pct["very_high"]
+    day = g.reshape(14, BPD)
+    by_window = {}
+    for name, hours in WINDOWS:
+        v = np.concatenate([day[:, h * 12:(h + 1) * 12].ravel() for h in hours])
+        v = v[np.isfinite(v)]
+        by_window[name] = ((v > 180).mean() * 100, (v < 70).mean() * 100)
+    hypo_drugs = act[act.drug_class.isin(["Sulfonylurea", "Basal insulin"])].drug.tolist()
+    flags = []
+    if tbr >= 4 or vlow >= 1:
+        worst = max(by_window, key=lambda k: by_window[k][1])
+        text = f"Low sugar {tbr:.0f}% of the time (target under 4%), mostly in the {worst}"
+        if vlow >= 1:
+            text += f"; {vlow:.1f}% below 54"
+        if hypo_drugs:
+            text += f". Consider reviewing {' / '.join(hypo_drugs)}"
+        flags.append({"severity": "alert", "text": text})
+    if tir < 70:
+        worst = max(by_window, key=lambda k: by_window[k][0])
+        flags.append({"severity": "warn", "text": f"In target range only {tir:.0f}% of the time (target over 70%); "
+                                                  f"highs mostly in the {worst}"})
+    if vhigh >= 5:
+        flags.append({"severity": "warn", "text": f"Above 250 for {vhigh:.0f}% of the time (target under 5%)"})
+    if cv > 36:
+        flags.append({"severity": "warn", "text": f"Glucose swings a lot: variability {cv:.0f}% (target 36% or less)"})
+    ev = store.events.get(pid)
+    if ev is not None:
+        doses = ev[ev.event_type == "medication"]
+        if len(doses):
+            conf = float(doses.logged.mean() * 100)
+            if conf < 80:
+                flags.append({"severity": "warn", "text": f"Only {conf:.0f}% of diabetes doses confirmed in the app over 14 days"})
+    if not flags:
+        flags.append({"severity": "ok", "text": f"Well controlled: {tir:.0f}% in range, lows {tbr:.1f}%, variability {cv:.0f}%"})
+    return flags
 
 
 def recent_context(pid, t, hours=4):
@@ -516,7 +566,33 @@ def snapshot(pid: str, t: str | None = None, history_hours: int = 12):
         low_now, low_after = float(base_c[:13].min()), float((base_c + d)[:13].min())
         sugg.append({"action": "Take 15 g fast sugar (glucose tablets / juice) and recheck in 15 min",
                      "effect": round(low_after - low_now, 0), "kind": "raise", "changes": [["meal", 0, 15, "high"]]})
-    return {"time": ms(t), "glucose": clean(now_g), "delta15": clean(d15), "trend": trend_arrow(d15),
+    headline = []
+    gword = ("very low" if now_g < 54 else "low" if now_g < 70 else "in range" if now_g <= 180 else "high" if now_g <= 250
+             else "very high") if np.isfinite(now_g) else "no reading"
+    tword = {"rising_fast": "rising fast", "rising": "rising", "steady": "steady", "falling": "falling",
+             "falling_fast": "falling fast", "unknown": ""}[trend_arrow(d15)]
+    headline.append({"severity": "alert" if gword in ("low", "very low", "very high") else "warn" if gword == "high" else "info",
+                     "text": f"Glucose {now_g:.0f} mg/dL now, {gword}{', ' + tword if tword else ''}" if np.isfinite(now_g) else "No recent reading"})
+    why = lambda k: (f" ({risks[k]['reasons'][0]['text'][0].lower()}{risks[k]['reasons'][0]['text'][1:]})"
+                     if risks[k]["reasons"] else "")
+    if risks["hypo"]["level"] == "high":
+        headline.append({"severity": "alert", "text": f"Low sugar likely in the next 2 hours{why('hypo')}"})
+    elif risks["hypo"]["level"] == "medium":
+        headline.append({"severity": "warn", "text": f"Low sugar possible in the next 2 hours{why('hypo')}"})
+    if risks["severe"]["level"] == "high":
+        headline.append({"severity": "alert", "text": f"Likely to go above 250 in the next 2 hours{why('severe')}"})
+    elif risks["spike"]["level"] == "high":
+        headline.append({"severity": "warn", "text": f"Likely to go above 180 in the next 2 hours{why('spike')}"})
+    elif risks["spike"]["level"] == "medium":
+        headline.append({"severity": "info", "text": f"Could go above 180 in the next 2 hours{why('spike')}"})
+    if len(headline) == 1 and gword == "in range":
+        headline.append({"severity": "ok", "text": "Expected to stay in range for the next 2 hours"})
+    best = next((x for x in sugg if x["effect"] is not None), None)
+    if best:
+        eff = f" ({'+' if best['effect'] > 0 else ''}{best['effect']:.0f} mg/dL)"
+        headline.append({"severity": "tip", "text": f"Suggestion: {best['action']}{eff}"})
+
+    return {"time": ms(t), "glucose": clean(now_g), "delta15": clean(d15), "trend": trend_arrow(d15), "headline": headline,
             "history": hist, "actual_future": future, "forecast": forecast, "risks": risks, "events": events,
             "suggestions": sugg, "recent_meals": [{"minutes_ago": m, "carbs": c, "gi": gi} for m, c, gi in meals]}
 

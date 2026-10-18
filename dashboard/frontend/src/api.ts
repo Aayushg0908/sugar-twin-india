@@ -28,6 +28,12 @@ export interface Meta {
   demo_patient: string;
 }
 
+export type Severity = "alert" | "warn" | "info" | "ok" | "tip";
+export interface Finding {
+  severity: Severity;
+  text: string;
+}
+
 export interface PatientRow {
   id: string;
   name: string | null;
@@ -39,6 +45,7 @@ export interface PatientRow {
   trend: Trend;
   risks: Record<RiskKey, number>;
   levels: Record<RiskKey, Level>;
+  urgency: "urgent" | "watch" | "ok";
   tir14: number;
   score: number;
 }
@@ -81,7 +88,12 @@ export interface Summary {
     carb_label: "high" | "low" | "average";
     recovery_label: "slow" | "fast" | "average";
     walk_label: "strong" | "weak" | "average";
+    rise_per_roti: number;
+    pop_rise_per_roti: number;
+    recovery_hours: number;
+    pop_recovery_hours: number;
   };
+  flags: Finding[];
 }
 
 export interface Reason {
@@ -124,6 +136,7 @@ export interface Snapshot {
   glucose: number | null;
   delta15: number | null;
   trend: Trend;
+  headline: Finding[];
   history: { t: number; g: number | null }[];
   actual_future: { t: number; g: number | null }[];
   forecast: { t: number; g: number; lo: number; hi: number }[];

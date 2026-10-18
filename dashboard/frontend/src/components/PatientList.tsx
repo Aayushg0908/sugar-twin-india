@@ -3,32 +3,32 @@ import { Search, Sparkles } from "lucide-react";
 import type { PatientRow } from "../api";
 import { Pill, TrendIcon, glucoseColor } from "../ui";
 
-type Filter = "all" | "alerts" | "T2D" | "Prediabetes" | "Normoglycemic";
+type Filter = "all" | "urgent" | "watch" | "T2D" | "Prediabetes" | "Normoglycemic";
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: "alerts", label: "Alerts" },
+  { key: "urgent", label: "Urgent" },
+  { key: "watch", label: "Watch" },
   { key: "all", label: "All" },
   { key: "T2D", label: "T2D" },
   { key: "Prediabetes", label: "Pre-DM" },
   { key: "Normoglycemic", label: "Normal" },
 ];
 
-const hasAlert = (p: PatientRow) => p.levels.spike === "high" || p.levels.hypo === "high" || p.levels.severe === "high";
 
 export default function PatientList({ patients, selected, onSelect }: {
   patients: PatientRow[]; selected: string | null; onSelect: (id: string) => void;
 }) {
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("alerts");
+  const [filter, setFilter] = useState<Filter>("urgent");
 
   const rows = useMemo(() => patients.filter((p) => {
     if (q && !`${p.id} ${p.name ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
-    if (filter === "alerts") return hasAlert(p) || p.name;
+    if (filter === "urgent" || filter === "watch") return p.urgency === filter || p.name;
     if (filter === "all") return true;
     return p.cohort === filter;
   }), [patients, q, filter]);
 
-  const nAlerts = patients.filter(hasAlert).length;
-  const nHypo = patients.filter((p) => p.levels.hypo === "high").length;
+  const nUrgent = patients.filter((p) => p.urgency === "urgent").length;
+  const nWatch = patients.filter((p) => p.urgency === "watch").length;
 
   return (
     <aside className="flex h-full w-[320px] shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -38,14 +38,14 @@ export default function PatientList({ patients, selected, onSelect }: {
           <span className="text-xs text-slate-400">{patients.length} monitored</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-red-50 px-3 py-2">
-            <div className="text-xl font-bold text-red-700">{nAlerts}</div>
-            <div className="text-[11px] font-medium text-red-600">need attention now</div>
-          </div>
-          <div className="rounded-xl bg-blue-50 px-3 py-2">
-            <div className="text-xl font-bold text-blue-700">{nHypo}</div>
-            <div className="text-[11px] font-medium text-blue-600">low-sugar risk</div>
-          </div>
+          <button onClick={() => setFilter("urgent")} className="rounded-xl bg-red-50 px-3 py-2 text-left">
+            <div className="text-xl font-bold text-red-700">{nUrgent}</div>
+            <div className="text-[11px] font-medium text-red-600">urgent: low sugar or above 250 likely</div>
+          </button>
+          <button onClick={() => setFilter("watch")} className="rounded-xl bg-amber-50 px-3 py-2 text-left">
+            <div className="text-xl font-bold text-amber-700">{nWatch}</div>
+            <div className="text-[11px] font-medium text-amber-600">watch: spike above 180 likely</div>
+          </button>
         </div>
         <label className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm">
           <Search className="h-4 w-4 text-slate-400" />
@@ -77,17 +77,16 @@ export default function PatientList({ patients, selected, onSelect }: {
                     <span className="truncate text-sm font-semibold text-slate-800">{p.name ?? p.id}</span>
                     {p.name && <span className="text-[10px] text-slate-400">{p.id}</span>}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <div className="mt-0.5 flex items-center gap-1.5 whitespace-nowrap text-[11px] text-slate-500">
                     <span>{p.cohort === "Normoglycemic" ? "No diabetes" : p.cohort}</span>
-                    <span>·</span>
-                    <span>HbA1c {p.hba1c ?? "–"}</span>
+                    {p.hba1c != null && <><span>·</span><span>HbA1c {p.hba1c}</span></>}
                     <span>·</span>
                     <span>{Math.round(p.tir14)}% in range</span>
                   </div>
                   <div className="mt-1 flex gap-1">
-                    {p.levels.spike === "high" && <Pill className="bg-amber-50 text-amber-700 ring-amber-200">Spike</Pill>}
-                    {p.levels.severe === "high" && <Pill className="bg-orange-50 text-orange-700 ring-orange-200">&gt;250</Pill>}
-                    {p.levels.hypo === "high" && <Pill className="bg-blue-50 text-blue-700 ring-blue-200">Low</Pill>}
+                    {p.levels.hypo === "high" && <Pill className="bg-red-50 text-red-700 ring-red-200">Low sugar likely</Pill>}
+                    {p.levels.severe === "high" && <Pill className="bg-orange-50 text-orange-700 ring-orange-200">Above 250 likely</Pill>}
+                    {p.levels.spike === "high" && p.levels.severe !== "high" && <Pill className="bg-amber-50 text-amber-700 ring-amber-200">Spike likely</Pill>}
                   </div>
                 </div>
                 <div className={`flex flex-col items-end ${glucoseColor(p.glucose)}`}>

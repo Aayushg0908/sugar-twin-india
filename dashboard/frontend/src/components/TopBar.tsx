@@ -23,7 +23,7 @@ export default function TopBar({ time, start, end, playing, onTime, onPlay }: {
 
       <div className="ml-auto flex items-center gap-3">
         <div className="hidden text-right leading-tight md:block">
-          <div className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Simulated time · day {day} of 14</div>
+          <div className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Demo replay · day {day} of 14</div>
           <div className="text-sm font-semibold text-slate-800">{dateTime(time)}</div>
         </div>
         <button onClick={() => onTime(Math.max(min, time - 6 * STEP))} title="Back 3 hours"

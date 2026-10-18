@@ -59,19 +59,28 @@ function Meter({ label, value, sub, ratio, tone }: { label: string; value: strin
 
 export function TwinCard({ s }: { s: Summary }) {
   const t = s.twin;
-  const word = { high: "more sensitive than average", low: "less sensitive than average", average: "about average" };
-  const rec = { slow: "slower than average", fast: "faster than average", average: "about average" };
-  const walk = { strong: "helps more than average", weak: "helps less than average", average: "average benefit" };
+  const rise = { high: "more than average", low: "less than average", average: "about average" }[t.carb_label];
+  const rec = { slow: "slower than average", fast: "faster than average", average: "about average" }[t.recovery_label];
+  const walk = { strong: "Helps a lot", weak: "Helps less", average: "Helps" }[t.walk_label];
   return (
     <div className="grid gap-2 sm:grid-cols-3">
-      <Meter label="Carb sensitivity" value={`+${t.p10} mg/dL`} sub={`per 10 g carbs · ${word[t.carb_label]}`} ratio={t.p10 / t.pop_p10}
+      <Meter label="Sugar rise per roti (~15 g carbs)" value={`+${t.rise_per_roti} mg/dL`} sub={`${rise} (average +${t.pop_rise_per_roti})`}
+        ratio={t.rise_per_roti / t.pop_rise_per_roti}
         tone={t.carb_label === "high" ? "bg-red-500" : t.carb_label === "low" ? "bg-emerald-500" : "bg-slate-500"} />
-      <Meter label="Recovery after meals" value={`${t.tau} min`} sub={`time constant · ${rec[t.recovery_label]}`} ratio={t.tau / t.pop_tau}
+      <Meter label="Back to normal after a meal" value={`~${t.recovery_hours} h`} sub={`${rec} (average ${t.pop_recovery_hours} h)`}
+        ratio={t.recovery_hours / t.pop_recovery_hours}
         tone={t.recovery_label === "slow" ? "bg-red-500" : t.recovery_label === "fast" ? "bg-emerald-500" : "bg-slate-500"} />
-      <Meter label="Walking effect" value={`${t.w.toFixed(2)}×`} sub={walk[t.walk_label]} ratio={t.w}
+      <Meter label="Walking after meals" value={walk} sub={`${t.w.toFixed(2)}× the average effect`} ratio={t.w}
         tone={t.walk_label === "strong" ? "bg-emerald-500" : t.walk_label === "weak" ? "bg-red-500" : "bg-slate-500"} />
     </div>
   );
+}
+
+export function twinSentence(s: Summary) {
+  const t = s.twin;
+  const first = s.name ? s.name.split(" ")[0] : "This patient";
+  return `${first}'s sugar rises about ${t.rise_per_roti} mg/dL for every roti-sized portion of carbs and takes ~${t.recovery_hours} h `
+    + `to settle after a meal. A 20-minute walk after eating ${t.walk_label === "weak" ? "helps a little" : "helps lower the peak"}.`;
 }
 
 export const TwinIcon = () => <Dna className="h-4 w-4" />;
