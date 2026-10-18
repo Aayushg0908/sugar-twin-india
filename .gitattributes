@@ -1,0 +1,5 @@
+# Keep data files byte-identical on every OS (no line-ending conversion)
+*.csv     -text
+*.json    -text
+*.parquet binary
+*.zip     binary

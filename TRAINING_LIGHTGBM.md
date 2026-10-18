@@ -1,7 +1,7 @@
 # Training the LightGBM models (helper laptop guide)
 
 This guide is for training the LightGBM part of **Sugar Twin India** on a separate laptop (no GPU needed).
-Total time: about **15 minutes of setup + 30–90 minutes of training**, mostly unattended.
+Total time: about **10 minutes of setup + 30–90 minutes of training**, mostly unattended.
 
 **You need:** Windows, macOS or Linux · **16 GB RAM** recommended · about **5 GB free disk** ·
 **Python 3.11–3.13** (3.13 tested) · **Git** · an internet connection for the setup only.
@@ -37,26 +37,23 @@ pip install -r requirements.txt
 ```
 macOS only: LightGBM needs OpenMP, so run `brew install libomp` first.
 
-> Use the **exact** versions in `requirements.txt`. The data is regenerated from random seeds,
-> and different numpy/pandas versions can produce slightly different data.
+> Use the **exact** versions in `requirements.txt` so results match.
 
-## 3. Regenerate the datasets (about 2 minutes)
-The data is not stored in git (it's about 100 MB). It is rebuilt identically from fixed seeds:
-```bash
-python src/generate_ehr.py --n 5000 --seed 42
-python src/generate_wearable.py
-```
-
-## 4. Check the data matches the reference
+## 3. Check the data arrived intact
+The datasets (about 120 MB) come with the repo in `data/ehr` and `data/wearable`, so nothing needs generating.
 ```bash
 python src/check_data.py
 ```
 ✅ You should see **"All data matches the reference. Safe to train."**
-❌ If you see `MISMATCH`, check you're inside the `.venv` and installed `requirements.txt`, then repeat step 3.
-If it still mismatches, you can continue, but tell Aayush.
+❌ If you see `MISMATCH`, the clone is probably incomplete. Run `git pull` and try again, or tell Aayush.
+
+## 4. (Skip) Regenerating the data
+Not needed. For reference only, the same data can be rebuilt from fixed seeds with
+`python src/generate_ehr.py --n 5000 --seed 42` and then `python src/generate_wearable.py`.
 
 ## 5. Build the training table (about 2–5 minutes)
 This fuses the EHR with the wearable data into one row per patient per prediction time.
+It's the only file you build yourself. It's derived from the data in git and too big to store (several hundred MB).
 ```bash
 python src/build_features.py
 ```
@@ -120,9 +117,9 @@ git push -u origin lightgbm-results
 | `MemoryError` or the laptop freezes | Close other apps; make sure you used the default `build_features.py` (every 30 min) |
 | `ModuleNotFoundError` | The venv isn't active. Re-run the activate command from step 2 |
 | `lightgbm` import error on macOS | `brew install libomp`, then `pip install --force-reinstall lightgbm==4.7.0` |
-| `FileNotFoundError: data/...` | Run the steps in order: 3 → 5 → 7 |
+| `FileNotFoundError: data/model/features.parquet` | Run step 5 before step 6/7 |
 | Training looks stuck | It's probably not. Each model prints every 200 rounds and the big ones take several minutes |
-| `check_data.py` mismatch | Wrong package versions. Recreate the venv and reinstall `requirements.txt` |
+| `check_data.py` mismatch | Incomplete clone. Run `git pull`, or re-clone the repo |
 
 ## What the training does (short version)
 - **Inputs (about 100 features):** current glucose and its trend, last 6 h glucose statistics, this patient's usual glucose at this time of day,

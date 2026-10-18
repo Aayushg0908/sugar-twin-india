@@ -17,16 +17,17 @@ to predict an adverse glycaemic event about 2 hours in advance and show it to a 
 | 4. Doctor dashboard | ⏳ |
 
 ## Quick start
+The generated datasets are included in `data/ehr` and `data/wearable` (about 120 MB), with their validation reports.
 ```bash
 pip install -r requirements.txt
-python src/generate_ehr.py --n 5000 --seed 42   # Dataset 1 -> data/ehr/*.csv
-python src/generate_wearable.py                 # Dataset 2 -> data/wearable/ (about 40 s)
 python src/check_data.py                        # confirms data matches the reference
 python src/build_features.py                    # fused training table -> data/model/features.parquet
 python src/train_lightgbm.py                    # models -> models/lightgbm, report -> results/lightgbm
 ```
-Validation reports (optional):
+Regenerate the data and validation reports from scratch (optional, identical output with the pinned versions):
 ```bash
+python src/generate_ehr.py --n 5000 --seed 42   # Dataset 1 -> data/ehr/*.csv
+python src/generate_wearable.py                 # Dataset 2 -> data/wearable/ (about 40 s)
 python src/validate_ehr.py                      # -> data/ehr/validation_report.html
 python src/process_shanghai.py                  # needs the ShanghaiT2DM download (see docs/wearable_dictionary.md)
 python src/validate_wearable.py                 # -> data/wearable/validation_report.html
