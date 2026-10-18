@@ -1,0 +1,16 @@
+# Generated data (rebuilt from seeds, see README)
+data/*
+!data/splits.csv
+!data/fingerprint.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

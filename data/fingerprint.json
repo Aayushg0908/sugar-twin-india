@@ -1,0 +1,38 @@
+{
+  "ehr/patients": {
+    "rows": 5000,
+    "sha": "acc62a8d77072e5c"
+  },
+  "ehr/labs": {
+    "rows": 336146,
+    "sha": "b8f6f8d8158a9527"
+  },
+  "ehr/medications": {
+    "rows": 12645,
+    "sha": "dea0bba1f3256c87"
+  },
+  "ehr/diagnoses": {
+    "rows": 14638,
+    "sha": "0c55ee1018c364b7"
+  },
+  "ehr/twin_params": {
+    "rows": 5000,
+    "sha": "7a2b545d21f672c6"
+  },
+  "wearable/events": {
+    "rows": 421443,
+    "sha": "889f03d199dedb13"
+  },
+  "wearable/daily_summary": {
+    "rows": 70000,
+    "sha": "95d404fe173e8c4d"
+  },
+  "wearable/cgm": {
+    "rows": 20160000,
+    "sha": "46efadb596883c29"
+  },
+  "wearable/vitals": {
+    "rows": 20160000,
+    "sha": "92f990aea54acfca"
+  }
+}
