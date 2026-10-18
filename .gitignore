@@ -1,20 +1,2 @@
-# Derived training table: rebuilt in a few minutes by src/build_features.py
-data/model/
-
-# Extracted copy of the ShanghaiT2DM download (data.zip is kept)
-data/external/shanghai/raw/
-
-# Python
-__pycache__/
-*.pyc
+﻿# local Python environment (kept outside the team folder)
 .venv/
-venv/
-
-# OS / editors
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# Training console logs (numbers are in metrics.json)
-results/*.log

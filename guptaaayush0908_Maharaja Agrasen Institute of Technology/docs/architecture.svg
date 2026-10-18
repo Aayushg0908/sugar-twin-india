@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1610 950" width="1610" height="950" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#52525b"/>
+    </marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1d7b84"/>
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #d4d4d8; stroke-width: 1.2; }
+      .soft { fill: #f6f6f7; stroke: #d4d4d8; stroke-width: 1.2; }
+      .dash { fill: #fafafa; stroke: #a1a1aa; stroke-width: 1.2; stroke-dasharray: 5 4; }
+      .teal { fill: #e6f3f4; stroke: #1d7b84; stroke-width: 1.4; }
+      .h { font-size: 15px; font-weight: 700; fill: #18181b; }
+      .col { font-size: 13px; font-weight: 700; fill: #1d7b84; letter-spacing: 0.3px; }
+      .t { font-size: 12.5px; fill: #3f3f46; }
+      .m { font-size: 11.5px; fill: #71717a; }
+      .big { font-size: 26px; font-weight: 800; fill: #18181b; }
+      .line { stroke: #52525b; stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+      .lineT { stroke: #1d7b84; stroke-width: 1.6; fill: none; marker-end: url(#arrT); }
+      .lineD { stroke: #a1a1aa; stroke-width: 1.3; fill: none; stroke-dasharray: 5 4; marker-end: url(#arr); }
+    </style>
+  </defs>
+
+  <rect width="1610" height="950" fill="#f4f4f5"/>
+  <text x="40" y="48" font-size="24" font-weight="800" fill="#18181b">Sugar Twin India · system architecture</text>
+  <text x="40" y="72" class="m">A digital twin of each Type 2 diabetes patient: fuses EHR (static) with CGM + smartwatch (dynamic) to predict glucose spikes and lows up to 2 hours ahead, and lets a doctor test changes on the patient's own physiology.</text>
+
+  <!-- column headers -->
+  <text x="40" y="110" class="col">1 · DATA (SYNTHETIC, PRIVACY-SAFE)</text>
+  <text x="420" y="110" class="col">2 · FUSION</text>
+  <text x="760" y="110" class="col">3 · MODELS</text>
+  <text x="1160" y="110" class="col">4 · SERVING</text>
+  <text x="1380" y="110" class="col">5 · DOCTOR DASHBOARD</text>
+
+  <!-- 1. data -->
+  <rect x="40" y="125" width="320" height="168" rx="12" class="box"/>
+  <text x="58" y="152" class="h">Synthetic EHR · 5,000 Indian patients</text>
+  <text x="58" y="177" class="t">• Demographics, lifestyle, diet (regional staple)</text>
+  <text x="58" y="198" class="t">• Diagnoses (ICD-10) incl. CKD, neuropathy</text>
+  <text x="58" y="219" class="t">• Labs and vitals, 3 years (LOINC): HbA1c, eGFR…</text>
+  <text x="58" y="240" class="t">• Medications: realistic treatment ladder</text>
+  <text x="58" y="261" class="t">• Genetics: 4 T2D variants + polygenic score</text>
+  <text x="58" y="282" class="m">generate_ehr.py · validated vs ICMR-INDIAB ranges</text>
+
+  <rect x="40" y="310" width="320" height="168" rx="12" class="box"/>
+  <text x="58" y="337" class="h">Wearable + CGM stream · 14 days, 5-min</text>
+  <text x="58" y="362" class="t">• CGM glucose (sensor noise, gaps, warm-up)</text>
+  <text x="58" y="383" class="t">• Smartwatch: heart rate, HRV, steps, sleep stages</text>
+  <text x="58" y="404" class="t">• App logs: meals (≈60% logged), doses, exercise</text>
+  <text x="58" y="425" class="t">• Indian meal times, feasts, fasting, illness</text>
+  <text x="58" y="446" class="t">• 20 million readings per stream</text>
+  <text x="58" y="467" class="m">generate_wearable.py · checked vs real ShanghaiT2DM CGM</text>
+
+  <rect x="40" y="498" width="320" height="78" rx="12" class="dash"/>
+  <text x="58" y="524" class="h" fill="#3f3f46">Hidden "true" physiology</text>
+  <text x="58" y="546" class="t">Insulin sensitivity, beta-cell function, adherence…</text>
+  <text x="58" y="565" class="m">drives both streams · never a model input</text>
+
+  <rect x="40" y="592" width="320" height="62" rx="12" class="dash"/>
+  <text x="58" y="618" class="h" fill="#3f3f46">ShanghaiT2DM (real, open data)</text>
+  <text x="58" y="640" class="m">used only to check the simulator is realistic</text>
+
+  <path d="M200,498 L200,480" class="lineD"/>
+  <path d="M40,537 L24,537 L24,209 L38,209" class="lineD"/>
+
+  <!-- 2. fusion -->
+  <rect x="420" y="190" width="280" height="250" rx="12" class="soft"/>
+  <text x="438" y="217" class="h">Feature fusion</text>
+  <text x="438" y="237" class="m">build_features.py</text>
+  <text x="438" y="264" class="t">One row per patient every 30 min</text>
+  <text x="438" y="285" class="t">97 features:</text>
+  <text x="448" y="306" class="t">CGM trends + personal daily profile</text>
+  <text x="448" y="327" class="t">smartwatch + logged meals / doses</text>
+  <text x="448" y="348" class="t">EHR labs, meds, genetics</text>
+  <text x="438" y="375" class="t">Only what an app knows at that moment</text>
+  <text x="438" y="396" class="t">Patient-level split 70 / 15 / 15</text>
+  <text x="438" y="425" class="big" font-size="20">3.2 M rows</text>
+
+  <path d="M360,209 C392,209 392,260 418,262" class="line"/>
+  <path d="M360,394 C392,394 392,360 418,356" class="line"/>
+
+  <!-- 3. models -->
+  <rect x="760" y="125" width="340" height="118" rx="12" class="box"/>
+  <text x="778" y="152" class="h">LightGBM × 7</text>
+  <text x="778" y="176" class="t">Alerts, next 2 h: spike &gt;180 · severe &gt;250 · low &lt;70</text>
+  <text x="778" y="197" class="t">Glucose forecast at 30 / 60 / 90 / 120 min</text>
+  <text x="778" y="218" class="t">SHAP → plain-language reasons for the doctor</text>
+  <text x="778" y="236" class="m">train_lightgbm.py</text>
+
+  <rect x="760" y="258" width="340" height="100" rx="12" class="box"/>
+  <text x="778" y="285" class="h">GRU deep learning (PyTorch)</text>
+  <text x="778" y="309" class="t">Raw 6 h sequence (11 channels) + EHR vector</text>
+  <text x="778" y="330" class="t">Multi-task: same alerts + forecasts</text>
+  <text x="778" y="349" class="m">train_gru.py · GPU</text>
+
+  <rect x="760" y="374" width="340" height="56" rx="12" class="teal"/>
+  <text x="778" y="399" class="h">Ensemble</text>
+  <text x="778" y="419" class="t">average of LightGBM + GRU (nothing tuned on test)</text>
+
+  <rect x="760" y="455" width="340" height="150" rx="12" class="teal"/>
+  <text x="778" y="482" class="h">Personalized physiology twin</text>
+  <text x="778" y="506" class="t">Fitted on each patient's week 1 (logged meals + CGM)</text>
+  <text x="778" y="527" class="t">Learns: carb sensitivity · recovery time · walk effect</text>
+  <text x="778" y="548" class="t">Answers what-if: meal size / type, walk, missed dose</text>
+  <text x="778" y="569" class="t">ML forecast + twin's change = scenario curve</text>
+  <text x="778" y="592" class="m">twin_simulator.py</text>
+
+  <path d="M700,262 C730,262 730,184 758,184" class="line"/>
+  <path d="M700,318 L758,308" class="line"/>
+  <path d="M930,243 L930,256" class="line"/>
+  <path d="M1095,243 C1120,300 1120,380 1102,398" class="line"/>
+  <path d="M930,358 L930,372" class="line"/>
+  <path d="M360,450 L392,450 L392,560 L758,560" class="line"/>
+  <text x="420" y="550" class="m">logged meals + CGM (week 1) → fit each patient's twin</text>
+
+  <!-- 4. serving -->
+  <rect x="1160" y="230" width="180" height="270" rx="12" class="soft"/>
+  <text x="1178" y="257" class="h">FastAPI</text>
+  <text x="1178" y="277" class="m">dashboard/backend/app.py</text>
+  <text x="1178" y="306" class="t">/patients</text>
+  <text x="1178" y="322" class="m">risk-sorted triage list</text>
+  <text x="1178" y="350" class="t">/summary</text>
+  <text x="1178" y="366" class="m">EHR, genetics, twin, 14 days</text>
+  <text x="1178" y="394" class="t">/snapshot</text>
+  <text x="1178" y="410" class="m">forecast, risks, reasons</text>
+  <text x="1178" y="438" class="t">/whatif</text>
+  <text x="1178" y="454" class="m">twin scenario simulation</text>
+  <text x="1178" y="485" class="m">test patients only</text>
+
+  <path d="M1100,402 L1158,380" class="lineT"/>
+  <path d="M1100,530 C1130,530 1130,470 1158,462" class="lineT"/>
+
+  <!-- 5. dashboard -->
+  <rect x="1380" y="150" width="190" height="430" rx="12" class="box"/>
+  <text x="1398" y="177" class="h">React + TypeScript</text>
+  <text x="1398" y="197" class="m">Vite · Tailwind · Recharts</text>
+  <text x="1398" y="228" class="t">• Patient list sorted</text>
+  <text x="1410" y="246" class="t">by risk (urgent / watch)</text>
+  <text x="1398" y="272" class="t">• Clinical summary</text>
+  <text x="1398" y="298" class="t">• 12 h CGM + 2 h</text>
+  <text x="1410" y="316" class="t">forecast with range</text>
+  <text x="1398" y="342" class="t">• Risks with reasons</text>
+  <text x="1398" y="368" class="t">• Twin suggestions</text>
+  <text x="1398" y="394" class="t">• What-if simulator</text>
+  <text x="1398" y="420" class="t">• Labs, meds, diagnoses,</text>
+  <text x="1410" y="438" class="t">HbA1c trend, genetics</text>
+  <text x="1398" y="464" class="t">• Demo time machine</text>
+  <text x="1410" y="482" class="t">(replays 14 days)</text>
+  <text x="1398" y="514" class="m">Light / dark clinical theme</text>
+  <text x="1398" y="532" class="m">dashboard/frontend</text>
+
+  <path d="M1340,365 L1378,365" class="lineT"/>
+
+  <!-- results band -->
+  <rect x="40" y="690" width="1530" height="220" rx="14" class="box"/>
+  <text x="62" y="722" class="h">Results on 750 held-out test patients (never used for training)</text>
+
+  <g>
+    <rect x="62" y="740" width="232" height="150" rx="10" class="soft"/>
+    <text x="78" y="772" class="m">Spike alert (&gt;180 in next 2 h)</text>
+    <text x="78" y="808" class="big">0.958 AUROC</text>
+    <text x="78" y="834" class="t">0.924 for T2D patients</text>
+    <text x="78" y="855" class="m">trend rule: 0.71</text>
+  </g>
+  <g>
+    <rect x="310" y="740" width="232" height="150" rx="10" class="soft"/>
+    <text x="326" y="772" class="m">Spikes flagged in advance</text>
+    <text x="326" y="808" class="big">95%</text>
+    <text x="326" y="834" class="t">warning up to 2 h ahead</text>
+    <text x="326" y="855" class="m">1.5 alerts per patient-day</text>
+  </g>
+  <g>
+    <rect x="558" y="740" width="232" height="150" rx="10" class="soft"/>
+    <text x="574" y="772" class="m">Low-sugar alert (&lt;70)</text>
+    <text x="574" y="808" class="big">0.978 AUROC</text>
+    <text x="574" y="834" class="t">94.5% of lows flagged early</text>
+    <text x="574" y="855" class="m">severe (&gt;250): 0.968</text>
+  </g>
+  <g>
+    <rect x="806" y="740" width="232" height="150" rx="10" class="soft"/>
+    <text x="822" y="772" class="m">Glucose forecast, 60 min</text>
+    <text x="822" y="808" class="big">±13.8 mg/dL</text>
+    <text x="822" y="834" class="t">±17.1 at 120 min</text>
+    <text x="822" y="855" class="m">"no change" baseline: ±21.3</text>
+  </g>
+  <g>
+    <rect x="1054" y="740" width="232" height="150" rx="10" class="soft"/>
+    <text x="1070" y="772" class="m">Twin: new meal's peak</text>
+    <text x="1070" y="808" class="big">25 mg/dL error</text>
+    <text x="1070" y="834" class="t">vs 31 one-size-fits-all</text>
+    <text x="1070" y="855" class="m">carb sensitivity recovered r = 0.92</text>
+  </g>
+  <g>
+    <rect x="1302" y="740" width="248" height="150" rx="10" class="teal"/>
+    <text x="1318" y="772" class="m">Fusion ablation (spike AUROC)</text>
+    <text x="1318" y="808" class="big">0.952 → 0.956</text>
+    <text x="1318" y="834" class="t">CGM only → full fusion</text>
+    <text x="1318" y="855" class="m">60-min error 14.8 → 13.9 mg/dL</text>
+  </g>
+</svg>
