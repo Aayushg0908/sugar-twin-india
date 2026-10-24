@@ -11,7 +11,7 @@ predicts **glucose spikes and lows up to 2 hours in advance**, and lets a doctor
 | 📽️ Demo video | **[link to be added]** |
 | 📊 Presentation | [docs/Sugar_Twin_India_presentation.pdf](docs/Sugar_Twin_India_presentation.pdf) · [.pptx](docs/Sugar_Twin_India_presentation.pptx) |
 | 🧭 Architecture diagram | [docs/architecture.pdf](docs/architecture.pdf) · [.png](docs/architecture.png) |
-| 🎬 Video script | [docs/VIDEO_SCRIPT.md](docs/VIDEO_SCRIPT.md) (outline) · [docs/VIDEO_TRANSCRIPT.md](docs/VIDEO_TRANSCRIPT.md) (full narration) · [docs/video/](docs/video/README.md) (teleprompter, subtitles) |
+| 🎬 Video link | https://youtu.be/56avITZW8NE
 | ▶️ Run the dashboard | `powershell -ExecutionPolicy Bypass -File start_dashboard.ps1` |
 
 ![Doctor dashboard](docs/images/dashboard_light.png)
