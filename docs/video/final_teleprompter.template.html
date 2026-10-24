@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sugar Twin · Voice-over Prompter</title>
+<style>
+  :root { --size: 42px; --line: 34vh; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0a0a0b; color: #f4f4f5; font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+  #scroller { position: fixed; inset: 0; overflow: hidden; }
+  #script { max-width: 940px; margin: 0 auto; padding: var(--line) 48px 80vh; font-size: var(--size); line-height: 1.42; }
+  body.mirror #script { transform: scaleX(-1); }
+  .part { margin: 1.4em 0 0.5em; font-size: 0.42em; letter-spacing: 0.08em; text-transform: uppercase; color: #5eead4; font-weight: 700; }
+  .s { margin: 0 0 0.55em; opacity: 0.45; transition: opacity .25s, color .25s; }
+  .s .t { font-size: 0.38em; color: #71717a; margin-right: 0.6em; font-variant-numeric: tabular-nums; vertical-align: middle; }
+  .s.now { opacity: 1; color: #fff; }
+  .s.past { opacity: 0.22; }
+  #guide { position: fixed; left: 0; right: 0; top: calc(var(--line) - 0.3em); height: calc(var(--size) * 1.6); pointer-events: none;
+           border-top: 2px solid rgba(94, 234, 212, .55); background: linear-gradient(rgba(94,234,212,.07), transparent); }
+  #video { position: fixed; right: 14px; top: 14px; width: 340px; border-radius: 10px; border: 1px solid #27272a; background: #000; z-index: 2; }
+  body.novideo #video { display: none; }
+  #status { position: fixed; left: 14px; top: 10px; font-size: 13px; color: #a1a1aa; font-variant-numeric: tabular-nums; z-index: 2; }
+  #status .t { font-size: 26px; color: #f4f4f5; font-weight: 700; }
+  #help { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); font-size: 12px; color: #71717a; background: rgba(24,24,27,.92);
+          border: 1px solid #27272a; border-radius: 12px; padding: 8px 14px; text-align: center; max-width: calc(100% - 24px); }
+  body.playing #help { opacity: 0; }
+  #count { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; font-size: 30vh; font-weight: 800; color: #5eead4;
+           background: rgba(10,10,11,.85); z-index: 3; }
+</style>
+</head>
+<body>
+<div id="scroller"><div id="script"></div></div>
+<div id="guide"></div>
+<video id="video" src="final_video.webm" muted playsinline preload="auto"></video>
+<div id="status"><div class="t" id="clock">00:00</div><div id="partlabel"></div><div id="mode"></div></div>
+<div id="help">
+  <b>Space</b> start / pause (3-second countdown from the start) · <b>← →</b> back / forward 5 s · <b>Click</b> a line to jump there<br>
+  <b>+ −</b> text size · <b>V</b> show / hide the video · <b>M</b> mirror · <b>F</b> full screen · <b>R</b> back to 00:00
+</div>
+<div id="count"></div>
+<script>
+const LINES = /*__LINES__*/[];
+const $ = (id) => document.getElementById(id);
+const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const video = $("video"), script = $("script");
+let hasVideo = false, playing = false, clock = 0, last = null;
+
+// ---- render
+const rows = [];
+let part = null;
+for (const l of LINES) {
+  if (l.part !== part) {
+    part = l.part;
+    const h = document.createElement("div");
+    h.className = "part"; h.textContent = `Part ${l.part} · ${l.title}`;
+    script.appendChild(h);
+  }
+  const p = document.createElement("p");
+  p.className = "s"; p.innerHTML = `<span class="t">${fmt(l.start)}</span>${esc(l.text)}`;
+  p.onclick = () => seek(l.start);
+  script.appendChild(p); rows.push(p);
+}
+
+// ---- time source: the video when it is next to this file, otherwise an internal clock
+video.addEventListener("loadedmetadata", () => { hasVideo = true; $("mode").textContent = "synced to final_video.webm"; });
+video.addEventListener("error", () => { hasVideo = false; document.body.classList.add("novideo"); $("mode").textContent = "no video found: using the built-in clock"; });
+const now = () => (hasVideo ? video.currentTime : clock);
+function seek(t) { t = Math.max(0, t); if (hasVideo) video.currentTime = t; clock = t; tick(true); }
+function setPlaying(on) {
+  playing = on; last = null;
+  document.body.classList.toggle("playing", on);
+  if (hasVideo) on ? video.play() : video.pause();
+}
+function start() {
+  if (playing) return setPlaying(false);
+  if (now() > 0.5) return setPlaying(true);
+  let n = 3; const c = $("count"); c.style.display = "flex"; c.textContent = n;
+  const id = setInterval(() => { n--; if (n === 0) { clearInterval(id); c.style.display = "none"; setPlaying(true); } else c.textContent = n; }, 1000);
+}
+
+// ---- scroll so the current sentence sits on the reading line, gliding toward the next one
+const lineY = () => innerHeight * parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--line")) / 100;
+let shown = -1;
+function tick(jump) {
+  const t0 = performance.now();
+  if (playing && !hasVideo) { if (last !== null) clock += (t0 - last) / 1000; last = t0; }
+  const t = now();
+  let i = 0;
+  while (i + 1 < LINES.length && LINES[i + 1].start <= t) i++;
+  if (i !== shown) { rows.forEach((r, k) => { r.classList.toggle("now", k === i); r.classList.toggle("past", k < i); }); shown = i; }
+  const a = rows[i], b = rows[i + 1];
+  let y = a.offsetTop;
+  if (b && t >= LINES[i].end) {
+    const f = Math.min(1, (t - LINES[i].end) / Math.max(0.3, LINES[i + 1].start - LINES[i].end));
+    y += (b.offsetTop - a.offsetTop) * f;
+  }
+  const target = y - lineY();
+  const sc = $("scroller");
+  sc.scrollTop = jump ? target : sc.scrollTop + (target - sc.scrollTop) * 0.18;
+  $("clock").textContent = fmt(t);
+  $("partlabel").textContent = `Part ${LINES[i].part}: ${LINES[i].title}`;
+  if (!hasVideo && playing && t > LINES[LINES.length - 1].end + 3) setPlaying(false);
+}
+setInterval(() => tick(false), 30);
+
+// ---- keys
+let size = 42;
+const setSize = (v) => { size = Math.max(24, Math.min(96, v)); document.documentElement.style.setProperty("--size", size + "px"); };
+document.addEventListener("keydown", (e) => {
+  const k = e.key;
+  if (k === " ") { e.preventDefault(); start(); }
+  else if (k === "ArrowLeft") seek(now() - 5);
+  else if (k === "ArrowRight") seek(now() + 5);
+  else if (k === "+" || k === "=") setSize(size + 4);
+  else if (k === "-" || k === "_") setSize(size - 4);
+  else if (k === "v" || k === "V") document.body.classList.toggle("novideo");
+  else if (k === "m" || k === "M") document.body.classList.toggle("mirror");
+  else if (k === "r" || k === "R") { setPlaying(false); seek(0); }
+  else if (k === "f" || k === "F") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+setTimeout(() => tick(true), 50);
+</script>
+</body>
+</html>

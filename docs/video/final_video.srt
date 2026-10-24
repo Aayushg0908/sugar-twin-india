@@ -1,0 +1,1380 @@
+1
+00:00:02,038 --> 00:00:07,130
+A person with diabetes sees their
+doctor maybe four times a year.
+
+2
+00:00:07,180 --> 00:00:13,564
+In between those visits, their blood sugar
+rises and falls hundreds of times a day,
+
+3
+00:00:13,614 --> 00:00:15,280
+and nobody is watching.
+
+4
+00:00:15,330 --> 00:00:20,424
+Now imagine every patient had a
+virtual copy of their own body.
+
+5
+00:00:20,474 --> 00:00:26,858
+A copy that could warn the doctor about
+a dangerous spike or a dangerous low,
+
+6
+00:00:26,908 --> 00:00:29,003
+two hours before it happens.
+
+7
+00:00:29,053 --> 00:00:33,291
+And a copy on which the
+doctor could test advice,
+
+8
+00:00:33,341 --> 00:00:36,722
+like a smaller dinner or a short walk,
+
+9
+00:00:36,772 --> 00:00:40,153
+before giving that advice
+to the real patient.
+
+10
+00:00:40,203 --> 00:00:42,296
+That is what we built.
+
+11
+00:00:42,346 --> 00:00:44,440
+This is Sugar Twin India,
+
+12
+00:00:44,490 --> 00:00:48,728
+our entry for the Happiest Health
+Digital Twin Challenge 2026.
+
+13
+00:00:50,698 --> 00:00:53,648
+I am Aayush Gupta, the team leader,
+
+14
+00:00:53,698 --> 00:01:00,078
+and I am presenting on behalf of our team
+of three from Maharaja Agrasen Institute
+
+15
+00:01:00,128 --> 00:01:01,364
+of Technology, Delhi.
+
+16
+00:01:01,414 --> 00:01:04,793
+With me on this project are Dhruv Gandhi,
+
+17
+00:01:04,843 --> 00:01:09,508
+who worked on the machine-learning
+models and how we tested them,
+
+18
+00:01:09,558 --> 00:01:15,081
+and Divyansh Singh, who worked on the
+data, its validation and the documentation.
+
+19
+00:01:15,131 --> 00:01:18,939
+I built the data simulator
+and the doctor dashboard.
+
+20
+00:01:18,989 --> 00:01:25,374
+In the next twenty minutes I will show
+you the problem, how our twin works,
+
+21
+00:01:25,424 --> 00:01:30,951
+a live demo, and our results,
+including the parts that did not work.
+
+22
+00:01:32,942 --> 00:01:36,754
+India has about 101 million
+people living with diabetes,
+
+23
+00:01:36,804 --> 00:01:39,758
+according to the
+ICMR-INDIAB study from 2023.
+
+24
+00:01:39,808 --> 00:01:45,769
+Most of them have Type 2 diabetes,
+so that is the condition we chose.
+
+25
+00:01:45,819 --> 00:01:50,491
+The real damage in diabetes
+does not happen in the clinic.
+
+26
+00:01:50,541 --> 00:01:52,208
+It happens between visits.
+
+27
+00:01:52,258 --> 00:01:55,224
+A rice-heavy lunch
+sends glucose above 250.
+
+28
+00:01:55,274 --> 00:01:58,664
+A late dinner keeps it high all night.
+
+29
+00:01:58,714 --> 00:02:05,532
+A wedding or a festival, a missed tablet,
+a fever, all of these push sugar up.
+
+30
+00:02:05,582 --> 00:02:11,104
+And for patients on sulfonylureas or
+insulin, the opposite danger is a low,
+
+31
+00:02:11,154 --> 00:02:16,676
+often early in the morning, which can
+make someone dizzy, confused, or worse.
+
+32
+00:02:16,726 --> 00:02:19,258
+Today, technology already
+collects this data.
+
+33
+00:02:19,308 --> 00:02:24,405
+A continuous glucose monitor, or CGM,
+records a reading every five minutes.
+
+34
+00:02:24,455 --> 00:02:26,983
+That is 288 readings a day.
+
+35
+00:02:27,033 --> 00:02:30,424
+A smartwatch adds heart
+rate, sleep and steps.
+
+36
+00:02:30,474 --> 00:02:32,574
+But this creates two problems.
+
+37
+00:02:32,624 --> 00:02:38,157
+First, a doctor cannot read 288
+numbers a day for hundreds of patients.
+
+38
+00:02:38,207 --> 00:02:41,166
+Second, a CGM only shows the past.
+
+39
+00:02:41,216 --> 00:02:44,179
+It tells you that glucose was high.
+
+40
+00:02:44,229 --> 00:02:49,322
+It does not tell you that
+it is about to be high.
+
+41
+00:02:49,372 --> 00:02:55,750
+At the same time, the hospital record
+knows a lot about the patient: their HbA1c,
+
+42
+00:02:55,800 --> 00:02:59,179
+their kidney function, their
+medicines, even genetic risk.
+
+43
+00:02:59,229 --> 00:03:04,764
+But that record is not connected to
+the live stream from the sensor.
+
+44
+00:03:04,814 --> 00:03:06,915
+So the challenge is clear.
+
+45
+00:03:06,965 --> 00:03:10,354
+Fuse the health record with the live data.
+
+46
+00:03:10,404 --> 00:03:12,938
+Predict the event before it happens.
+
+47
+00:03:12,988 --> 00:03:18,519
+And turn it into something a busy
+doctor can act on in seconds.
+
+48
+00:03:20,537 --> 00:03:27,349
+Our answer is a digital twin of each patient
+that does three things for the doctor.
+
+49
+00:03:27,399 --> 00:03:28,209
+One, triage.
+
+50
+00:03:28,259 --> 00:03:31,644
+Every patient is sorted by risk right now.
+
+51
+00:03:31,694 --> 00:03:36,360
+Urgent means a low, or a
+reading above 250, is likely.
+
+52
+00:03:36,410 --> 00:03:39,793
+Watch means a spike above 180 is likely.
+
+53
+00:03:39,843 --> 00:03:41,084
+Two, early warning.
+
+54
+00:03:41,134 --> 00:03:48,370
+For each patient, the twin predicts a spike
+above 180, above 250, or a low below 70,
+
+55
+00:03:48,420 --> 00:03:53,085
+up to two hours ahead, and
+explains why in plain language.
+
+56
+00:03:53,135 --> 00:03:54,814
+Three, advice tested first.
+
+57
+00:03:54,864 --> 00:04:00,390
+The twin learns how this particular
+patient's body responds to food and walking,
+
+58
+00:04:00,440 --> 00:04:05,967
+so the doctor can try a change on
+the twin before suggesting it.
+
+59
+00:04:15,082 --> 00:04:18,473
+Here is the whole system in one picture.
+
+60
+00:04:18,523 --> 00:04:19,759
+On the left,
+
+61
+00:04:19,809 --> 00:04:25,334
+the two data streams: a synthetic health
+record for five thousand Indian patients,
+
+62
+00:04:25,384 --> 00:04:30,479
+and fourteen days of CGM and
+smartwatch data for each of them.
+
+63
+00:04:30,533 --> 00:04:31,770
+In the middle,
+
+64
+00:04:31,820 --> 00:04:37,348
+every thirty minutes we fuse both
+streams into one row of 97 features,
+
+65
+00:04:37,398 --> 00:04:42,067
+using only what a real app
+would know at that moment.
+
+66
+00:04:42,117 --> 00:04:43,786
+Nothing from the future.
+
+67
+00:04:43,838 --> 00:04:47,216
+Those features go into
+two kinds of models.
+
+68
+00:04:47,266 --> 00:04:50,646
+Machine-learning models, LightGBM
+and a GRU neural network,
+
+69
+00:04:50,696 --> 00:04:52,789
+predict what will happen next.
+
+70
+00:04:52,839 --> 00:04:54,076
+Next to them,
+
+71
+00:04:54,126 --> 00:04:59,655
+a personal physiology twin learns how this
+patient's body works and answers what-if
+
+72
+00:04:59,705 --> 00:05:00,084
+questions.
+
+73
+00:05:00,137 --> 00:05:01,374
+On the right,
+
+74
+00:05:01,424 --> 00:05:07,811
+a FastAPI service and a React dashboard
+put it all in front of the doctor.
+
+75
+00:05:12,404 --> 00:05:18,785
+Let me start with an important point about
+the data: every patient in this project
+
+76
+00:05:18,835 --> 00:05:19,642
+is synthetic.
+
+77
+00:05:19,692 --> 00:05:24,789
+Real patient data is protected by
+India's DPDP Act and by HIPAA,
+
+78
+00:05:24,839 --> 00:05:28,650
+and the challenge asks for
+synthetic or open data.
+
+79
+00:05:28,700 --> 00:05:31,650
+So we built our own population, carefully,
+
+80
+00:05:31,701 --> 00:05:34,651
+and then checked it
+against real-world numbers.
+
+81
+00:05:34,701 --> 00:05:37,658
+The static stream is the health record.
+
+82
+00:05:37,708 --> 00:05:42,803
+We generated five thousand Indian adults:
+three thousand with Type 2 diabetes,
+
+83
+00:05:42,853 --> 00:05:46,662
+one thousand with prediabetes and
+one thousand without diabetes.
+
+84
+00:05:46,712 --> 00:05:52,670
+Each has demographics, lifestyle and a
+regional diet, rice in the south and east,
+
+85
+00:05:52,720 --> 00:05:54,386
+wheat in the north.
+
+86
+00:05:54,436 --> 00:05:56,960
+They have diagnoses coded in ICD-10,
+
+87
+00:05:57,010 --> 00:06:01,249
+three years of lab results
+and vitals coded in LOINC,
+
+88
+00:06:01,299 --> 00:06:05,538
+and medicines that follow a realistic
+treatment ladder: metformin first,
+
+89
+00:06:05,588 --> 00:06:08,970
+then a second drug,
+then insulin if needed.
+
+90
+00:06:09,020 --> 00:06:14,114
+We also added genetic markers: four
+known diabetes risk genes, like TCF7L2,
+
+91
+00:06:14,164 --> 00:06:16,257
+and a polygenic risk score.
+
+92
+00:06:16,307 --> 00:06:19,266
+The dynamic stream is the wearable data.
+
+93
+00:06:19,316 --> 00:06:24,418
+For every patient we simulated fourteen days
+at five-minute resolution: CGM glucose,
+
+94
+00:06:24,468 --> 00:06:27,853
+heart rate, heart-rate variability,
+steps and sleep stages.
+
+95
+00:06:27,903 --> 00:06:31,286
+That is about twenty
+million readings per stream.
+
+96
+00:06:31,336 --> 00:06:36,865
+On top of that, an app log of
+meals, medicine doses and exercise.
+
+97
+00:06:36,916 --> 00:06:39,881
+We made it feel Indian and real.
+
+98
+00:06:39,931 --> 00:06:46,315
+Breakfast around 8:30, lunch around 1:30,
+chai at 5, and a late dinner around 9.
+
+99
+00:06:46,365 --> 00:06:48,471
+Idli, dosa, rajma-chawal,
+roti-sabzi, biryani.
+
+100
+00:06:48,521 --> 00:06:51,475
+Wedding feasts, fasting
+days, illness, missed doses.
+
+101
+00:06:51,525 --> 00:06:57,484
+And just like real patients, people only
+log about sixty percent of their meals.
+
+102
+00:06:59,256 --> 00:07:03,067
+The key design idea is
+one body, two streams.
+
+103
+00:07:03,117 --> 00:07:08,645
+Both streams are generated from the same
+hidden physiology for each person: how
+
+104
+00:07:08,695 --> 00:07:12,936
+sensitive they are to insulin,
+how well their pancreas works,
+
+105
+00:07:12,986 --> 00:07:15,510
+how regularly they take their medicines.
+
+106
+00:07:15,560 --> 00:07:20,657
+So the lab HbA1c and the CGM
+curve agree with each other.
+
+107
+00:07:20,707 --> 00:07:27,100
+The HbA1c estimated from the CGM matches
+the lab HbA1c with a correlation of 0.93.
+
+108
+00:07:27,150 --> 00:07:33,532
+And these hidden values are never given to
+the models, so the models cannot cheat.
+
+109
+00:07:33,582 --> 00:07:34,820
+Then we validated.
+
+110
+00:07:34,870 --> 00:07:40,394
+The health record matches Indian studies:
+average HbA1c of 7.8 percent in diabetics,
+
+111
+00:07:40,444 --> 00:07:43,824
+45 percent with hypertension,
+89 percent on metformin.
+
+112
+00:07:43,874 --> 00:07:46,831
+All 14 of our literature checks passed.
+
+113
+00:07:46,881 --> 00:07:50,692
+The wearable data passed
+all 16 of its checks.
+
+114
+00:07:50,742 --> 00:07:54,133
+Most importantly, we compared
+it with real patients.
+
+115
+00:07:54,183 --> 00:07:55,421
+We used ShanghaiT2DM,
+
+116
+00:07:55,471 --> 00:08:01,003
+a public dataset of real CGM recordings
+from people with Type 2 diabetes.
+
+117
+00:08:01,053 --> 00:08:03,574
+At the same average glucose level,
+
+118
+00:08:03,624 --> 00:08:09,146
+real patients spend 83.5 percent of
+their time in range; ours spend 82.3.
+
+119
+00:08:09,196 --> 00:08:12,590
+Time above 180: 14.6
+percent real, 14.9 ours.
+
+120
+00:08:12,640 --> 00:08:17,739
+And after a meal, glucose peaks
+about 90 minutes later in both.
+
+121
+00:08:17,789 --> 00:08:21,172
+Our meals cause bigger
+rises, which is expected,
+
+122
+00:08:21,222 --> 00:08:26,751
+because rice and roti meals carry more
+carbohydrate than the small hospital meals
+
+123
+00:08:26,802 --> 00:08:28,039
+in that study.
+
+124
+00:08:30,071 --> 00:08:31,324
+Next, the models.
+
+125
+00:08:31,374 --> 00:08:37,763
+We used two kinds of twin, because we
+found that one kind cannot do everything.
+
+126
+00:08:37,813 --> 00:08:39,484
+The first kind predicts.
+
+127
+00:08:39,535 --> 00:08:44,632
+Every thirty minutes, we build one
+row per patient with 97 features.
+
+128
+00:08:44,682 --> 00:08:49,350
+These include the last six
+hours of glucose and its trend,
+
+129
+00:08:49,400 --> 00:08:54,068
+what this patient's glucose
+usually does at this time of day,
+
+130
+00:08:54,118 --> 00:08:58,786
+logged meals and doses, steps,
+heart rate and last night's sleep,
+
+131
+00:08:58,836 --> 00:09:02,646
+plus the health record: HbA1c, kidney
+function, medicines, genetics.
+
+132
+00:09:02,696 --> 00:09:05,218
+That gives us 3.2 million rows.
+
+133
+00:09:05,268 --> 00:09:09,937
+We split them by patient: 70
+percent of patients for training,
+
+134
+00:09:09,987 --> 00:09:13,799
+15 percent for tuning, and
+15 percent, 750 patients,
+
+135
+00:09:13,849 --> 00:09:15,944
+kept completely unseen for testing.
+
+136
+00:09:15,994 --> 00:09:22,379
+On this data we trained LightGBM, seven
+models: three alerts, for a spike above 180,
+
+137
+00:09:22,429 --> 00:09:29,671
+above 250 and a low below 70, and four
+forecasts, 30, 60, 90 and 120 minutes ahead.
+
+138
+00:09:29,721 --> 00:09:34,818
+LightGBM also tells us why it made
+each prediction, through SHAP values,
+
+139
+00:09:34,868 --> 00:09:37,391
+which we turn into plain-language reasons.
+
+140
+00:09:37,441 --> 00:09:43,392
+We also trained a GRU, a deep-learning
+model that reads the raw six-hour sequence,
+
+141
+00:09:43,442 --> 00:09:47,678
+eleven channels every five minutes,
+together with the health record.
+
+142
+00:09:47,728 --> 00:09:51,964
+It trains on a laptop GPU
+in about seven minutes.
+
+143
+00:09:52,014 --> 00:09:56,250
+The final prediction is the
+simple average of both models,
+
+144
+00:09:56,300 --> 00:09:59,251
+with nothing tuned on the test patients.
+
+145
+00:09:59,301 --> 00:10:01,831
+The second kind of twin simulates.
+
+146
+00:10:01,881 --> 00:10:08,689
+During testing we discovered something
+important: if we add a meal or a walk to the
+
+147
+00:10:08,739 --> 00:10:11,261
+inputs, the machine-learning
+models barely react.
+
+148
+00:10:11,311 --> 00:10:14,261
+They learned correlation,
+not cause and effect.
+
+149
+00:10:14,311 --> 00:10:19,835
+So for what-if questions we built a
+personal physiology twin: equations for how
+
+150
+00:10:19,885 --> 00:10:23,694
+food is absorbed and how
+glucose comes back down,
+
+151
+00:10:23,744 --> 00:10:29,697
+with three settings learned for each
+patient from their own first week: how much
+
+152
+00:10:29,747 --> 00:10:33,984
+sugar rises per portion of
+carbohydrate, how quickly it recovers,
+
+153
+00:10:34,034 --> 00:10:36,128
+and how much walking helps.
+
+154
+00:10:36,178 --> 00:10:40,846
+The machine-learning models answer "what
+will happen?" The physiology twin answers
+
+155
+00:10:40,896 --> 00:10:42,990
+"what if we change something?"
+
+156
+00:10:44,466 --> 00:10:49,139
+Now let me show you how
+a doctor would use this.
+
+157
+00:10:50,263 --> 00:10:52,799
+First, the strip at the top.
+
+158
+00:10:52,849 --> 00:10:55,370
+This prototype replays
+fourteen recorded days,
+
+159
+00:10:55,420 --> 00:11:00,513
+so we can move through time
+and watch the twin at work.
+
+160
+00:11:00,563 --> 00:11:05,240
+In a real clinic, this would
+simply be the live clock.
+
+161
+00:11:07,179 --> 00:11:13,136
+Right now it is Saturday, the 26th of
+September, at 7:30 in the evening.
+
+162
+00:11:14,237 --> 00:11:17,621
+On the left is the doctor's patient list.
+
+163
+00:11:17,671 --> 00:11:19,770
+751 patients are being monitored.
+
+164
+00:11:19,820 --> 00:11:27,064
+55 are urgent: a low, or a reading above
+250, is likely in the next two hours.
+
+165
+00:11:27,114 --> 00:11:31,350
+58 are on watch: a spike
+above 180 is likely.
+
+166
+00:11:31,400 --> 00:11:37,358
+The list is sorted by risk, so the
+doctor always starts at the top.
+
+167
+00:11:39,353 --> 00:11:41,032
+Take this patient, P00152.
+
+168
+00:11:41,082 --> 00:11:44,034
+Her glucose is 93, which looks fine.
+
+169
+00:11:44,084 --> 00:11:47,048
+But the twin says low sugar likely.
+
+170
+00:11:47,098 --> 00:11:47,484
+Why?
+
+171
+00:11:47,534 --> 00:11:54,347
+Her glucose has dropped about 60 points
+in the last two hours and is lower than
+
+172
+00:11:54,397 --> 00:11:56,921
+usual for this time of day.
+
+173
+00:11:56,971 --> 00:12:03,350
+Its suggestion is simple: take 15 grams
+of fast sugar and recheck in 15 minutes.
+
+174
+00:12:03,400 --> 00:12:06,780
+That is a low caught before it happens.
+
+175
+00:12:08,720 --> 00:12:14,683
+This patient is the opposite: already at
+242, with a reading above 250 likely.
+
+176
+00:12:14,733 --> 00:12:18,979
+Two patients, two very different
+problems, both visible in seconds.
+
+177
+00:12:20,915 --> 00:12:23,007
+Now our demo patient, Sunita.
+
+178
+00:12:23,057 --> 00:12:26,865
+She is 48, from South India,
+eats rice-based meals,
+
+179
+00:12:26,915 --> 00:12:30,722
+has had diabetes for three
+years, and takes metformin,
+
+180
+00:12:30,772 --> 00:12:33,294
+glimepiride and two more
+diabetes medicines.
+
+181
+00:12:33,344 --> 00:12:39,295
+She was created separately, outside our
+dataset, so no model has ever seen her.
+
+182
+00:12:41,991 --> 00:12:44,954
+This clinical summary is
+the thirty-second read.
+
+183
+00:12:45,004 --> 00:12:49,668
+On the left: right now her
+glucose is 123 and steady,
+
+184
+00:12:49,718 --> 00:12:54,382
+but it could go above 180
+in the next two hours,
+
+185
+00:12:54,432 --> 00:12:59,096
+because it usually peaks near
+220 after this time of day.
+
+186
+00:12:59,146 --> 00:13:03,813
+On the right are the findings
+from the last fourteen days,
+
+187
+00:13:03,863 --> 00:13:09,388
+and the first one matters most:
+low sugar ten percent of the time,
+
+188
+00:13:09,438 --> 00:13:14,105
+against a target of under four
+percent, mostly in the morning.
+
+189
+00:13:14,155 --> 00:13:19,260
+The twin suggests reviewing her glimepiride,
+a medicine known to cause lows.
+
+190
+00:13:19,310 --> 00:13:26,985
+It also flags that only 54 percent of her
+time is in range and that only about half
+
+191
+00:13:27,035 --> 00:13:29,989
+her doses were confirmed in the app.
+
+192
+00:13:30,039 --> 00:13:34,718
+A doctor sees all of that
+without opening a single chart.
+
+193
+00:13:37,503 --> 00:13:43,882
+Here is her glucose over the last twelve
+hours: the black line is the CGM.
+
+194
+00:13:43,932 --> 00:13:49,461
+The blue dashed line is the twin's
+forecast for the next two hours,
+
+195
+00:13:49,511 --> 00:13:52,895
+and the shaded band is the likely range.
+
+196
+00:13:52,945 --> 00:13:56,752
+The circles are meals she
+logged, with their carbs,
+
+197
+00:13:56,802 --> 00:14:01,037
+and the dots at the top
+are her medicine doses.
+
+198
+00:14:01,087 --> 00:14:04,468
+You can hover over any marker for details.
+
+199
+00:14:06,459 --> 00:14:08,553
+Because this is a replay,
+
+200
+00:14:08,603 --> 00:14:14,127
+we can do something a real clinic cannot:
+reveal what actually happened next.
+
+201
+00:14:14,177 --> 00:14:17,991
+The grey line is the real
+glucose after "now",
+
+202
+00:14:18,041 --> 00:14:21,425
+and you can see the forecast followed it.
+
+203
+00:14:23,374 --> 00:14:25,038
+Now watch the replay.
+
+204
+00:14:25,088 --> 00:14:28,042
+Time moves forward thirty
+minutes every second.
+
+205
+00:14:28,092 --> 00:14:32,339
+Keep an eye on the high-sugar
+card on the right.
+
+206
+00:14:34,854 --> 00:14:40,808
+It turns from unlikely, to possible, to
+likely, before the glucose line crosses 180.
+
+207
+00:14:40,858 --> 00:14:44,671
+That is the early warning
+the challenge asked for.
+
+208
+00:14:49,179 --> 00:14:53,848
+The reasons come from the model
+itself, rewritten in plain language.
+
+209
+00:14:53,898 --> 00:15:00,279
+For example: "usually peaks near 220 after
+this time of day", and "high for hours".
+
+210
+00:15:00,329 --> 00:15:04,149
+Only reasons a doctor
+can act on are shown.
+
+211
+00:15:06,914 --> 00:15:08,580
+Now the personal twin.
+
+212
+00:15:08,630 --> 00:15:12,011
+For Sunita it suggests: at the next meal,
+
+213
+00:15:12,061 --> 00:15:18,872
+swap her usual large rice meal for a smaller
+low-GI one, like roti, dal and salad.
+
+214
+00:15:18,922 --> 00:15:23,600
+Her twin estimates that lowers
+her peak by about 37 points.
+
+215
+00:15:23,650 --> 00:15:28,318
+Or walk for twenty minutes,
+starting half an hour after eating.
+
+216
+00:15:32,377 --> 00:15:35,339
+These numbers come from her own data.
+
+217
+00:15:35,389 --> 00:15:41,339
+Her twin learned that her sugar rises about
+17 points for every roti-sized portion
+
+218
+00:15:41,389 --> 00:15:43,482
+of carbs, more than average,
+
+219
+00:15:43,532 --> 00:15:49,053
+and takes about four and a half
+hours to settle after a meal.
+
+220
+00:15:50,988 --> 00:15:55,233
+When the doctor clicks "Try it",
+the what-if simulator opens.
+
+221
+00:15:55,283 --> 00:15:58,241
+The dotted line is her usual meal.
+
+222
+00:15:58,291 --> 00:16:02,964
+The solid line is the same meal
+with a twenty-minute walk.
+
+223
+00:16:04,914 --> 00:16:12,154
+Now I change the food type from rice to
+roti and dal, and the peak drops further.
+
+224
+00:16:14,057 --> 00:16:18,295
+If I mark a skipped
+dose, the curve goes up.
+
+225
+00:16:18,345 --> 00:16:24,736
+The doctor can see the effect of each
+choice on this patient's body before giving
+
+226
+00:16:24,786 --> 00:16:25,595
+the advice.
+
+227
+00:16:30,872 --> 00:16:35,536
+Below, the doctor has the full health
+record: latest labs, medicines,
+
+228
+00:16:35,586 --> 00:16:41,107
+diagnoses and her HbA1c trend over three
+years, and her genetic risk markers.
+
+229
+00:16:47,401 --> 00:16:51,212
+And there is a dark
+theme, for night shifts.
+
+230
+00:16:54,254 --> 00:16:56,350
+Now, how good is it?
+
+231
+00:16:56,400 --> 00:17:02,353
+Every number here is on the 750 test
+patients that the models never saw.
+
+232
+00:17:02,403 --> 00:17:09,654
+For the main alert, a spike above 180 in
+the next two hours, the AUROC is 0.958.
+
+233
+00:17:09,704 --> 00:17:14,380
+A simple rule that just follows
+the current trend gets 0.71.
+
+234
+00:17:14,430 --> 00:17:19,101
+For diabetics only, which is
+the harder group, it is 0.924.
+
+235
+00:17:19,151 --> 00:17:22,959
+95 percent of spikes were
+flagged before they happened.
+
+236
+00:17:23,009 --> 00:17:27,673
+When we set the alert to
+catch 80 percent of spikes,
+
+237
+00:17:27,723 --> 00:17:30,673
+three out of four alerts are correct,
+
+238
+00:17:30,723 --> 00:17:35,387
+at about one and a half
+alerts per patient per day.
+
+239
+00:17:35,438 --> 00:17:38,817
+For lows below 70, the AUROC is 0.978,
+
+240
+00:17:38,867 --> 00:17:42,675
+and 94.5 percent of lows
+were flagged in advance.
+
+241
+00:17:42,726 --> 00:17:48,253
+For the glucose forecast one hour
+ahead, the average error is 13.8 mg/dL.
+
+242
+00:17:48,303 --> 00:17:53,409
+If you simply assume glucose
+stays the same, the error is 21.3.
+
+243
+00:17:53,459 --> 00:17:55,989
+At two hours: 17.1 against 31.7.
+
+244
+00:18:03,099 --> 00:18:06,050
+Does fusing the two streams actually help?
+
+245
+00:18:06,100 --> 00:18:07,345
+We tested it.
+
+246
+00:18:07,395 --> 00:18:10,780
+CGM alone gives a spike AUROC of 0.952.
+
+247
+00:18:10,830 --> 00:18:16,781
+Adding the smartwatch and app logs raises
+it, adding the health record raises it,
+
+248
+00:18:16,831 --> 00:18:20,209
+and the full fusion is best, at 0.956,
+
+249
+00:18:20,259 --> 00:18:24,067
+with the one-hour error
+falling from 14.8 to 13.9.
+
+250
+00:18:24,117 --> 00:18:28,784
+The gains are modest, because
+the CGM is the strongest signal,
+
+251
+00:18:28,834 --> 00:18:30,928
+but each stream adds something.
+
+252
+00:18:30,978 --> 00:18:35,216
+For lows, the CGM alone
+does almost all the work.
+
+253
+00:18:36,510 --> 00:18:38,607
+And does personal beat average?
+
+254
+00:18:38,657 --> 00:18:42,896
+When the twin predicts the
+rise after a brand-new meal,
+
+255
+00:18:42,946 --> 00:18:48,472
+using what it learned in the
+first week, its error is 25 mg/dL,
+
+256
+00:18:48,522 --> 00:18:51,046
+against 31 for a one-size-fits-all model.
+
+257
+00:18:51,096 --> 00:18:56,189
+Its learned carb sensitivity matches
+each patient's hidden true value with a
+
+258
+00:18:56,239 --> 00:18:57,475
+correlation of 0.92.
+
+259
+00:18:59,525 --> 00:19:03,774
+We also tested it the way it will be used.
+
+260
+00:19:03,824 --> 00:19:08,918
+On a new user's first day, without
+meal logging, without a smartwatch,
+
+261
+00:19:08,968 --> 00:19:14,491
+and with a noisier sensor, the spike
+AUROC stays between 0.94 and 0.96.
+
+262
+00:19:14,541 --> 00:19:20,492
+That means the system can work with
+just a CGM, which matters in India,
+
+263
+00:19:20,542 --> 00:19:23,064
+where not everyone has a smartwatch.
+
+264
+00:19:23,114 --> 00:19:28,214
+We also ran 24 clinical scenario checks,
+including feasts, missed doses, illness,
+
+265
+00:19:28,264 --> 00:19:30,789
+fasting on sulfonylureas
+and night-time lows.
+
+266
+00:19:30,839 --> 00:19:31,647
+19 passed.
+
+267
+00:19:31,697 --> 00:19:36,366
+The 5 that failed were what-if checks
+on the machine-learning models,
+
+268
+00:19:36,416 --> 00:19:41,514
+and that failure is exactly why the
+physiology twin answers what-if questions
+
+269
+00:19:41,564 --> 00:19:41,943
+instead.
+
+270
+00:19:41,993 --> 00:19:46,662
+One more finding : knowing every
+past meal perfectly barely helps.
+
+271
+00:19:46,712 --> 00:19:50,533
+The biggest gain comes from
+knowing the next meal.
+
+272
+00:19:50,583 --> 00:19:53,968
+If a patient shares a simple meal plan,
+
+273
+00:19:54,018 --> 00:19:58,262
+the spike AUROC for diabetics
+rises from 0.92 to 0.96.
+
+274
+00:20:00,346 --> 00:20:03,734
+I want to be honest about the limits.
+
+275
+00:20:03,784 --> 00:20:06,309
+First, all our data is synthetic.
+
+276
+00:20:06,359 --> 00:20:09,738
+We validated it carefully,
+including against real patients,
+
+277
+00:20:09,788 --> 00:20:15,310
+but accuracy on real patients will
+be lower than what you have seen.
+
+278
+00:20:15,360 --> 00:20:20,885
+Second, the physiology twin uses the
+same kind of equations as our simulator,
+
+279
+00:20:20,935 --> 00:20:26,031
+so how well it recovers each
+patient's physiology is a best case.
+
+280
+00:20:26,081 --> 00:20:26,460
+Third,
+
+281
+00:20:26,510 --> 00:20:32,470
+the low-sugar alert is sensitive but
+not precise: about three out of four low
+
+282
+00:20:32,520 --> 00:20:34,187
+alerts are false alarms.
+
+283
+00:20:34,237 --> 00:20:40,623
+For lows, we chose to warn early rather
+than miss one, but this needs work.
+
+284
+00:20:40,673 --> 00:20:46,204
+Our next steps: validate on real,
+consented CGM data with a partner hospital.
+
+285
+00:20:46,254 --> 00:20:50,498
+Keep re-fitting each patient's
+twin as new meals are logged.
+
+286
+00:20:50,548 --> 00:20:55,220
+Build a patient app with an
+"I'm about to eat" button,
+
+287
+00:20:55,270 --> 00:20:58,654
+which our experiments show
+improves predictions the most.
+
+288
+00:20:58,704 --> 00:21:04,666
+And extend the same fusion of health
+records and wearables to blood pressure and
+
+289
+00:21:04,716 --> 00:21:05,525
+heart risk.
+
+290
+00:21:07,559 --> 00:21:13,514
+A doctor with hundreds of patients has
+two questions every morning: who needs me
+
+291
+00:21:13,564 --> 00:21:16,517
+now, and what should I tell them?
+
+292
+00:21:16,567 --> 00:21:20,804
+Sugar Twin India answers both,
+two hours before the event,
+
+293
+00:21:20,854 --> 00:21:24,234
+with advice tested on
+each patient's own twin.
+
+294
+00:21:24,284 --> 00:21:29,812
+Everything, the data, the models, the
+dashboard and every result you have seen,
+
+295
+00:21:29,862 --> 00:21:32,816
+is open source on GitHub at
+github.com/Aayushg0908/sugar-twin-india.
+
+296
+00:21:32,866 --> 00:21:34,538
+Thank you for watching.

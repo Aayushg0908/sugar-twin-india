@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sugar Twin · Teleprompter</title>
+<style>
+  :root { --size: 44px; --line: 32vh; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0a0a0b; color: #f4f4f5; font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+  #scroller { position: fixed; inset: 0; overflow-y: scroll; scrollbar-width: none; }
+  #scroller::-webkit-scrollbar { display: none; }
+  #script { max-width: 980px; margin: 0 auto; padding: calc(var(--line) - 0.2em) 48px 75vh; font-size: var(--size); line-height: 1.45; }
+  body.mirror #script { transform: scaleX(-1); }
+  .part { margin: 1.6em 0 0.5em; font-size: 0.42em; letter-spacing: 0.08em; text-transform: uppercase; color: #5eead4; font-weight: 700; }
+  .part span { color: #71717a; margin-left: 0.8em; font-weight: 500; }
+  .cue { margin: 0.6em 0; font-size: 0.5em; font-style: italic; color: #fbbf24; line-height: 1.35; }
+  .cue::before { content: "🎬  "; font-style: normal; }
+  body.nocues .cue { display: none; }
+  .say { margin: 0 0 0.9em; cursor: pointer; transition: opacity .25s; }
+  .say.past { opacity: 0.32; }
+  .opt { font-size: 0.4em; vertical-align: middle; color: #a1a1aa; border: 1px solid #3f3f46; border-radius: 6px; padding: 0 6px; margin-left: 8px; }
+  b { color: #fff; }
+  #guide { position: fixed; left: 0; right: 0; top: var(--line); height: calc(var(--size) * 1.5); pointer-events: none;
+           border-top: 2px solid rgba(94, 234, 212, .55); background: linear-gradient(rgba(94,234,212,.08), transparent); }
+  #guide::before { content: "▶"; position: absolute; left: 14px; top: -0.62em; color: #5eead4; font-size: 22px; }
+  #bar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+         justify-content: center; background: rgba(24,24,27,.92); border: 1px solid #27272a; border-radius: 14px; padding: 8px 12px;
+         font-size: 13px; color: #d4d4d8; transition: opacity .4s; max-width: calc(100% - 24px); }
+  body.playing.idle #bar { opacity: 0; }
+  #bar button { background: #27272a; color: #f4f4f5; border: 0; border-radius: 8px; padding: 6px 10px; font: inherit; cursor: pointer; }
+  #bar button:hover { background: #3f3f46; }
+  #bar button.primary { background: #0d9488; font-weight: 700; min-width: 86px; }
+  #bar .sep { width: 1px; height: 22px; background: #3f3f46; }
+  #bar .val { min-width: 54px; text-align: center; font-variant-numeric: tabular-nums; }
+  #status { position: fixed; top: 10px; right: 14px; font-size: 13px; color: #a1a1aa; text-align: right; font-variant-numeric: tabular-nums; }
+  #status .t { font-size: 22px; color: #f4f4f5; font-weight: 700; }
+  #status .ahead { color: #4ade80; } #status .behind { color: #f87171; }
+  #help { position: fixed; top: 10px; left: 14px; font-size: 12px; color: #71717a; line-height: 1.5; }
+  body.playing #help { display: none; }
+</style>
+</head>
+<body>
+<div id="scroller"><div id="script"></div></div>
+<div id="guide"></div>
+<div id="status"><div class="t" id="clock">00:00</div><div id="partlabel"></div><div id="pace"></div></div>
+<div id="help">
+  <b>Space</b> play / pause · <b>↑ ↓</b> speed · <b>+ −</b> text size · <b>← →</b> previous / next part<br>
+  <b>Click</b> a line to start from it · <b>C</b> hide screen cues · <b>M</b> mirror (glass teleprompter) · <b>F</b> full screen · <b>R</b> restart
+</div>
+<div id="bar">
+  <button id="play" class="primary">▶ Play</button>
+  <span class="sep"></span>
+  <button id="slower" title="Slower (↓)">−</button><span class="val" id="wpm"></span><button id="faster" title="Faster (↑)">+</button>
+  <span class="sep"></span>
+  <button id="smaller" title="Smaller text (−)">A−</button><button id="bigger" title="Bigger text (+)">A+</button>
+  <span class="sep"></span>
+  <button id="prev" title="Previous part (←)">⏮ Part</button><button id="next" title="Next part (→)">Part ⏭</button>
+  <button id="cues" title="Show / hide screen cues (C)">Cues</button>
+  <button id="mirror" title="Mirror for a glass teleprompter (M)">Mirror</button>
+  <button id="restart" title="Back to the start (R)">Restart</button>
+</div>
+<script>
+const SEGMENTS = [{"n": 1, "title": "Hook and team", "start": "0:00", "end": "1:15", "items": [{"type": "cue", "text": "Camera on the presenter, or slide 1.", "optional": false}, {"type": "say", "text": "A person with diabetes sees their doctor maybe four times a year. In between those visits, their blood sugar rises and falls hundreds of times a day, and nobody is watching.", "optional": false}, {"type": "say", "text": "Now imagine every patient had a virtual copy of their own body. A copy that could warn the doctor about a dangerous spike or a dangerous low, two hours before it happens. And a copy on which the doctor could test advice, like a smaller dinner or a short walk, before giving that advice to the real patient.", "optional": false}, {"type": "say", "text": "That is what we built. This is Sugar Twin India, our entry for the Happiest Health Digital Twin Challenge 2026.", "optional": false}, {"type": "cue", "text": "Slide 2.", "optional": false}, {"type": "say", "text": "I am Aayush Gupta, the team leader, and I am presenting on behalf of our team of three from Maharaja Agrasen Institute of Technology, Delhi. With me on this project are Dhruv Gandhi, who worked on the machine-learning models and how we tested them, and Divyansh Singh, who worked on the data, its validation and the documentation. I built the data simulator and the doctor dashboard.", "optional": false}, {"type": "say", "text": "In the next twenty minutes I will show you the problem, how our twin works, a live demo, and our results, including the parts that did not work.", "optional": false}]}, {"n": 2, "title": "The problem", "start": "1:15", "end": "3:15", "items": [{"type": "cue", "text": "Slide 3.", "optional": false}, {"type": "say", "text": "India has about 101 million people living with diabetes, according to the ICMR-INDIAB study from 2023. Most of them have Type 2 diabetes, so that is the condition we chose.", "optional": false}, {"type": "say", "text": "The real damage in diabetes does not happen in the clinic. It happens between visits. A rice-heavy lunch sends glucose above 250. A late dinner keeps it high all night. A wedding or a festival, a missed tablet, a fever, all of these push sugar up. And for patients on sulfonylureas or insulin, the opposite danger is a low, often early in the morning, which can make someone dizzy, confused, or worse.", "optional": false}, {"type": "say", "text": "Today, technology already collects this data. A continuous glucose monitor, or CGM, records a reading every five minutes. That is 288 readings a day. A smartwatch adds heart rate, sleep and steps. But this creates two problems.", "optional": false}, {"type": "say", "text": "First, a doctor cannot read 288 numbers a day for hundreds of patients.", "optional": false}, {"type": "say", "text": "Second, a CGM only shows the past. It tells you that glucose was high. It does not tell you that it is about to be high.", "optional": false}, {"type": "say", "text": "At the same time, the hospital record knows a lot about the patient: their HbA1c, their kidney function, their medicines, even genetic risk. But that record is not connected to the live stream from the sensor.", "optional": false}, {"type": "say", "text": "So the challenge is clear. Fuse the health record with the live data. Predict the event before it happens. And turn it into something a busy doctor can act on in seconds.", "optional": false}]}, {"n": 3, "title": "Our idea and how it works", "start": "3:15", "end": "5:00", "items": [{"type": "cue", "text": "Slide 4.", "optional": false}, {"type": "say", "text": "Our answer is a digital twin of each patient that does three things for the doctor.", "optional": false}, {"type": "say", "text": "One, triage. Every patient is sorted by risk right now. Urgent means a low, or a reading above 250, is likely. Watch means a spike above 180 is likely.", "optional": false}, {"type": "say", "text": "Two, early warning. For each patient, the twin predicts a spike above 180, above 250, or a low below 70, up to two hours ahead, and explains why in plain language.", "optional": false}, {"type": "say", "text": "Three, advice tested first. The twin learns how this particular patient's body responds to food and walking, so the doctor can try a change on the twin before suggesting it.", "optional": false}, {"type": "cue", "text": "Slide 5, then `docs/architecture.png`. Move left to right.", "optional": false}, {"type": "say", "text": "Here is the whole system in one picture. On the left, the two data streams: a synthetic health record for five thousand Indian patients, and fourteen days of CGM and smartwatch data for each of them.", "optional": false}, {"type": "say", "text": "In the middle, every thirty minutes we fuse both streams into one row of 97 features, using only what a real app would know at that moment. Nothing from the future.", "optional": false}, {"type": "say", "text": "Those features go into two kinds of models. Machine-learning models, LightGBM and a GRU neural network, predict what will happen next. Next to them, a personal physiology twin learns how this patient's body works and answers what-if questions.", "optional": false}, {"type": "say", "text": "On the right, a FastAPI service and a React dashboard put it all in front of the doctor.", "optional": false}]}, {"n": 4, "title": "The data: two streams, one body", "start": "5:00", "end": "8:00", "items": [{"type": "cue", "text": "Slide 6.", "optional": false}, {"type": "say", "text": "Let me start with an important point about the data: every patient in this project is synthetic. Real patient data is protected by India's DPDP Act and by HIPAA, and the challenge asks for synthetic or open data. So we built our own population, carefully, and then checked it against real-world numbers.", "optional": false}, {"type": "say", "text": "The static stream is the health record. We generated five thousand Indian adults: three thousand with Type 2 diabetes, one thousand with prediabetes and one thousand without diabetes. Each has demographics, lifestyle and a regional diet, rice in the south and east, wheat in the north. They have diagnoses coded in ICD-10, three years of lab results and vitals coded in LOINC, and medicines that follow a realistic treatment ladder: metformin first, then a second drug, then insulin if needed. We also added genetic markers: four known diabetes risk genes, like TCF7L2, and a polygenic risk score.", "optional": false}, {"type": "say", "text": "The dynamic stream is the wearable data. For every patient we simulated fourteen days at five-minute resolution: CGM glucose, heart rate, heart-rate variability, steps and sleep stages. That is about twenty million readings per stream. On top of that, an app log of meals, medicine doses and exercise.", "optional": false}, {"type": "say", "text": "We made it feel Indian and real. Breakfast around 8:30, lunch around 1:30, chai at 5, and a late dinner around 9. Idli, dosa, rajma-chawal, roti-sabzi, biryani. Wedding feasts, fasting days, illness, missed doses. And just like real patients, people only log about sixty percent of their meals.", "optional": false}, {"type": "cue", "text": "Show `data/wearable/validation_report.html`.", "optional": false}, {"type": "say", "text": "The key design idea is one body, two streams. Both streams are generated from the same hidden physiology for each person: how sensitive they are to insulin, how well their pancreas works, how regularly they take their medicines. So the lab HbA1c and the CGM curve agree with each other. The HbA1c estimated from the CGM matches the lab HbA1c with a correlation of 0.93. And these hidden values are never given to the models, so the models cannot cheat.", "optional": false}, {"type": "say", "text": "Then we validated. The health record matches Indian studies: average HbA1c of 7.8 percent in diabetics, 45 percent with hypertension, 89 percent on metformin. All 14 of our literature checks passed. The wearable data passed all 16 of its checks.", "optional": false}, {"type": "say", "text": "Most importantly, we compared it with real patients. We used ShanghaiT2DM, a public dataset of real CGM recordings from people with Type 2 diabetes. At the same average glucose level, real patients spend 83.5 percent of their time in range; ours spend 82.3. Time above 180: 14.6 percent real, 14.9 ours. And after a meal, glucose peaks about 90 minutes later in both. Our meals cause bigger rises, which is expected, because rice and roti meals carry more carbohydrate than the small hospital meals in that study.", "optional": false}]}, {"n": 5, "title": "The models: one predicts, one simulates", "start": "8:00", "end": "10:00", "items": [{"type": "cue", "text": "Slide 7.", "optional": false}, {"type": "say", "text": "Next, the models. We used two kinds of twin, because we found that one kind cannot do everything.", "optional": false}, {"type": "say", "text": "The first kind predicts. Every thirty minutes, we build one row per patient with 97 features. These include the last six hours of glucose and its trend, what this patient's glucose usually does at this time of day, logged meals and doses, steps, heart rate and last night's sleep, plus the health record: HbA1c, kidney function, medicines, genetics. That gives us 3.2 million rows. We split them by patient: 70 percent of patients for training, 15 percent for tuning, and 15 percent, 750 patients, kept completely unseen for testing.", "optional": false}, {"type": "say", "text": "On this data we trained LightGBM, seven models: three alerts, for a spike above 180, above 250 and a low below 70, and four forecasts, 30, 60, 90 and 120 minutes ahead. LightGBM also tells us why it made each prediction, through SHAP values, which we turn into plain-language reasons.", "optional": false}, {"type": "say", "text": "We also trained a GRU, a deep-learning model that reads the raw six-hour sequence, eleven channels every five minutes, together with the health record. It trains on a laptop GPU in about seven minutes. The final prediction is the simple average of both models, with nothing tuned on the test patients.", "optional": false}, {"type": "say", "text": "The second kind of twin simulates. During testing we discovered something important: if we add a meal or a walk to the inputs, the machine-learning models barely react. They learned correlation, not cause and effect. So for what-if questions we built a personal physiology twin: equations for how food is absorbed and how glucose comes back down, with three settings learned for each patient from their own first week: how much sugar rises per portion of carbohydrate, how quickly it recovers, and how much walking helps.", "optional": false}, {"type": "say", "text": "The machine-learning models answer \"what will happen?\" The physiology twin answers \"what if we change something?\"", "optional": false}]}, {"n": 6, "title": "Live demo: the doctor dashboard", "start": "10:00", "end": "15:30", "items": [{"type": "cue", "text": "Switch to the dashboard. Move the mouse slowly and pause on each thing you name.", "optional": false}, {"type": "say", "text": "Now let me show you how a doctor would use this.", "optional": false}, {"type": "cue", "text": "Point at the \"Demo time machine\" strip.", "optional": false}, {"type": "say", "text": "First, the strip at the top. This prototype replays fourteen recorded days, so we can move through time and watch the twin at work. In a real clinic, this would simply be the live clock. _[Click \"Got it\".]_ Right now it is Saturday, the 26th of September, at 7:30 in the evening.", "optional": false}, {"type": "cue", "text": "Point at the patient list.", "optional": false}, {"type": "say", "text": "On the left is the doctor's patient list. 751 patients are being monitored. 55 are urgent: a low, or a reading above 250, is likely in the next two hours. 58 are on watch: a spike above 180 is likely. The list is sorted by risk, so the doctor always starts at the top.", "optional": false}, {"type": "cue", "text": "Click P00152.", "optional": false}, {"type": "say", "text": "Take this patient, P00152. Her glucose is 93, which looks fine. But the twin says low sugar likely. Why? Her glucose has dropped about 60 points in the last two hours and is lower than usual for this time of day. Its suggestion is simple: take 15 grams of fast sugar and recheck in 15 minutes. That is a low caught before it happens.", "optional": false}, {"type": "cue", "text": "Click P01695.", "optional": false}, {"type": "say", "text": "This patient is the opposite: already at 242, with a reading above 250 likely. Two patients, two very different problems, both visible in seconds.", "optional": false}, {"type": "cue", "text": "Click Sunita (demo).", "optional": false}, {"type": "say", "text": "Now our demo patient, Sunita. She is 48, from South India, eats rice-based meals, has had diabetes for three years, and takes metformin, glimepiride and two more diabetes medicines. She was created separately, outside our dataset, so no model has ever seen her.", "optional": false}, {"type": "cue", "text": "Point at the Clinical summary.", "optional": false}, {"type": "say", "text": "This clinical summary is the thirty-second read. On the left: right now her glucose is 123 and steady, but it could go above 180 in the next two hours, because it usually peaks near 220 after this time of day. On the right are the findings from the last fourteen days, and the first one matters most: low sugar ten percent of the time, against a target of under four percent, mostly in the morning. The twin suggests reviewing her glimepiride, a medicine known to cause lows. It also flags that only 54 percent of her time is in range and that only about half her doses were confirmed in the app. A doctor sees all of that without opening a single chart.", "optional": false}, {"type": "cue", "text": "Scroll to the glucose chart.", "optional": false}, {"type": "say", "text": "Here is her glucose over the last twelve hours: the black line is the CGM. The blue dashed line is the twin's forecast for the next two hours, and the shaded band is the likely range. The circles are meals she logged, with their carbs, and the dots at the top are her medicine doses. You can hover over any marker for details.", "optional": false}, {"type": "cue", "text": "Click \"Reveal what really happened\".", "optional": false}, {"type": "say", "text": "Because this is a replay, we can do something a real clinic cannot: reveal what actually happened next. The grey line is the real glucose after \"now\", and you can see the forecast followed it.", "optional": false}, {"type": "cue", "text": "Click \"Play replay\". Let it run for 15–20 seconds while a spike builds, then pause.", "optional": false}, {"type": "say", "text": "Now watch the replay. Time moves forward thirty minutes every second. Keep an eye on the high-sugar card on the right. _[Point.]_ It turns from unlikely, to possible, to likely, before the glucose line crosses 180. That is the early warning the challenge asked for.", "optional": false}, {"type": "cue", "text": "Pause the replay. Go back to 7:30 pm with the slider. Point at \"Right now\".", "optional": false}, {"type": "say", "text": "The reasons come from the model itself, rewritten in plain language. For example: \"usually peaks near 220 after this time of day\", and \"high for hours\". Only reasons a doctor can act on are shown.", "optional": false}, {"type": "cue", "text": "Scroll to \"What the twin suggests\".", "optional": false}, {"type": "say", "text": "Now the personal twin. For Sunita it suggests: at the next meal, swap her usual large rice meal for a smaller low-GI one, like roti, dal and salad. Her twin estimates that lowers her peak by about 37 points. Or walk for twenty minutes, starting half an hour after eating.", "optional": false}, {"type": "cue", "text": "Point at the twin profile.", "optional": false}, {"type": "say", "text": "These numbers come from her own data. Her twin learned that her sugar rises about 17 points for every roti-sized portion of carbs, more than average, and takes about four and a half hours to settle after a meal.", "optional": false}, {"type": "cue", "text": "Click \"Try it\" on the walk suggestion. The what-if panel opens.", "optional": false}, {"type": "say", "text": "When the doctor clicks \"Try it\", the what-if simulator opens. The dotted line is her usual meal. The solid line is the same meal with a twenty-minute walk. _[Move the sliders.]_ Now I change the food type from rice to roti and dal, and the peak drops further. If I mark a skipped dose, the curve goes up. The doctor can see the effect of each choice on this patient's body before giving the advice.", "optional": false}, {"type": "cue", "text": "Open the \"Health record\" and \"Genetic markers\" sections.", "optional": true}, {"type": "say", "text": "Below, the doctor has the full health record: latest labs, medicines, diagnoses and her HbA1c trend over three years, and her genetic risk markers.", "optional": false}, {"type": "cue", "text": "Toggle the dark theme, then back.", "optional": true}, {"type": "say", "text": "And there is a dark theme, for night shifts.", "optional": false}]}, {"n": 7, "title": "Results", "start": "15:30", "end": "18:00", "items": [{"type": "cue", "text": "Slide 8.", "optional": false}, {"type": "say", "text": "Now, how good is it? Every number here is on the 750 test patients that the models never saw.", "optional": false}, {"type": "say", "text": "For the main alert, a spike above 180 in the next two hours, the AUROC is 0.958. A simple rule that just follows the current trend gets 0.71. For diabetics only, which is the harder group, it is 0.924. 95 percent of spikes were flagged before they happened. When we set the alert to catch 80 percent of spikes, three out of four alerts are correct, at about one and a half alerts per patient per day.", "optional": false}, {"type": "say", "text": "For lows below 70, the AUROC is 0.978, and 94.5 percent of lows were flagged in advance.", "optional": false}, {"type": "say", "text": "For the glucose forecast one hour ahead, the average error is 13.8 mg/dL. If you simply assume glucose stays the same, the error is 21.3. At two hours: 17.1 against 31.7.", "optional": false}, {"type": "cue", "text": "Slide 9, then `results/fusion_ablation/report.html`.", "optional": false}, {"type": "say", "text": "Does fusing the two streams actually help? We tested it. CGM alone gives a spike AUROC of 0.952. Adding the smartwatch and app logs raises it, adding the health record raises it, and the full fusion is best, at 0.956, with the one-hour error falling from 14.8 to 13.9. The gains are modest, because the CGM is the strongest signal, but each stream adds something. For lows, the CGM alone does almost all the work.", "optional": false}, {"type": "cue", "text": "Show `results/twin_simulator/report.html`.", "optional": false}, {"type": "say", "text": "And does personal beat average? When the twin predicts the rise after a brand-new meal, using what it learned in the first week, its error is 25 mg/dL, against 31 for a one-size-fits-all model. Its learned carb sensitivity matches each patient's hidden true value with a correlation of 0.92.", "optional": false}, {"type": "cue", "text": "Slide 10.", "optional": false}, {"type": "say", "text": "We also tested it the way it will be used. On a new user's first day, without meal logging, without a smartwatch, and with a noisier sensor, the spike AUROC stays between 0.94 and 0.96. That means the system can work with just a CGM, which matters in India, where not everyone has a smartwatch.", "optional": false}, {"type": "say", "text": "We also ran 24 clinical scenario checks, including feasts, missed doses, illness, fasting on sulfonylureas and night-time lows. 19 passed. The 5 that failed were what-if checks on the machine-learning models, and that failure is exactly why the physiology twin answers what-if questions instead.", "optional": false}, {"type": "say", "text": "One more finding : knowing every past meal perfectly barely helps. The biggest gain comes from knowing the next meal. If a patient shares a simple meal plan, the spike AUROC for diabetics rises from 0.92 to 0.96.", "optional": true}]}, {"n": 8, "title": "Honest limits and next steps", "start": "18:00", "end": "19:15", "items": [{"type": "cue", "text": "Slide 13.", "optional": false}, {"type": "say", "text": "I want to be honest about the limits.", "optional": false}, {"type": "say", "text": "First, all our data is synthetic. We validated it carefully, including against real patients, but accuracy on real patients will be lower than what you have seen.", "optional": false}, {"type": "say", "text": "Second, the physiology twin uses the same kind of equations as our simulator, so how well it recovers each patient's physiology is a best case.", "optional": false}, {"type": "say", "text": "Third, the low-sugar alert is sensitive but not precise: about three out of four low alerts are false alarms. For lows, we chose to warn early rather than miss one, but this needs work.", "optional": false}, {"type": "say", "text": "Our next steps: validate on real, consented CGM data with a partner hospital. Keep re-fitting each patient's twin as new meals are logged. Build a patient app with an \"I'm about to eat\" button, which our experiments show improves predictions the most. And extend the same fusion of health records and wearables to blood pressure and heart risk.", "optional": false}]}, {"n": 9, "title": "Close", "start": "19:15", "end": "20:00", "items": [{"type": "cue", "text": "Slide 14.", "optional": false}, {"type": "say", "text": "A doctor with hundreds of patients has two questions every morning: who needs me now, and what should I tell them?", "optional": false}, {"type": "say", "text": "Sugar Twin India answers both, two hours before the event, with advice tested on each patient's own twin.", "optional": false}, {"type": "say", "text": "Everything, the data, the models, the dashboard and every result you have seen, is open source on GitHub at github.com/Aayushg0908/sugar-twin-india.", "optional": false}, {"type": "say", "text": "Thank you for watching.", "optional": false}, {"type": "cue", "text": "Keep the GitHub link on screen for the last 5 seconds.", "optional": false}]}];
+const $ = (id) => document.getElementById(id);
+const store = { get(k, d) { try { const v = localStorage.getItem("tp-" + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+                set(k, v) { try { localStorage.setItem("tp-" + k, JSON.stringify(v)); } catch {} } };
+const state = { playing: false, wpm: store.get("wpm", 140), size: store.get("size", 44), elapsed: 0, pos: 0 };
+const toSec = (mmss) => { const [m, s] = mmss.split(":").map(Number); return m * 60 + s; };
+const fmt = (s) => `${String(Math.floor(Math.abs(s) / 60)).padStart(2, "0")}:${String(Math.floor(Math.abs(s) % 60)).padStart(2, "0")}`;
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+// ---- render the script
+const script = $("script"), scroller = $("scroller");
+const nodes = [];
+for (const p of SEGMENTS) {
+  const h = document.createElement("div");
+  h.className = "part"; h.innerHTML = `Part ${p.n} · ${esc(p.title)}<span>${p.start} – ${p.end}</span>`;
+  h.dataset.kind = "part"; h.dataset.part = p.n; script.appendChild(h); nodes.push(h);
+  for (const it of p.items) {
+    const el = document.createElement(it.type === "cue" ? "div" : "p");
+    el.className = it.type === "cue" ? "cue" : "say";
+    el.innerHTML = esc(it.text) + (it.optional ? '<span class="opt">optional</span>' : "");
+    el.dataset.kind = it.type; el.dataset.part = p.n; el.dataset.words = it.text.split(/\s+/).length;
+    script.appendChild(el); nodes.push(el);
+  }
+}
+const lineY = () => window.innerHeight * parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--line")) / 100;
+const currentNode = () => {
+  const y = scroller.scrollTop + lineY();
+  let cur = nodes[0];
+  for (const n of nodes) { if (n.offsetTop <= y + 2) cur = n; else break; }
+  return cur;
+};
+
+// ---- auto-scroll at the chosen words-per-minute
+// Driven by a timer + real clock (not requestAnimationFrame), so it keeps time even if the window is partly covered.
+let last = null;
+function frame(t) {
+  if (state.playing) {
+    const dt = last === null ? 0 : (t - last) / 1000;
+    state.elapsed += dt;
+    const n = currentNode();
+    const h = n.offsetHeight + parseFloat(getComputedStyle(n).marginBottom);
+    const speed = n.dataset.kind === "say"
+      ? (state.wpm / 60) * (h / Math.max(1, +n.dataset.words))   // read at the target pace
+      : (document.body.classList.contains("nocues") && n.dataset.kind === "cue" ? 2000 : h / 1.8);  // glide past cues / headers
+    state.pos += speed * dt;
+    scroller.scrollTop = state.pos;
+    if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2) setPlaying(false);
+  }
+  last = t;
+  status();
+}
+let lastCur = null;
+function status() {
+  const n = currentNode();
+  if (n !== lastCur) {
+    lastCur = n;
+    let past = true;
+    for (const x of nodes) { if (x === n) past = false; if (x.dataset.kind === "say") x.classList.toggle("past", past); }
+  }
+  const p = SEGMENTS.find((s) => s.n === +n.dataset.part);
+  $("clock").textContent = fmt(state.elapsed);
+  $("partlabel").textContent = p ? `Part ${p.n}: ${p.title} · target ${p.start} – ${p.end}` : "";
+  if (p && state.elapsed > 0) {
+    const d = state.elapsed - toSec(p.start);
+    const el = $("pace");
+    if (state.elapsed < toSec(p.start)) { el.className = "ahead"; el.textContent = `${fmt(toSec(p.start) - state.elapsed)} ahead of plan`; }
+    else if (state.elapsed > toSec(p.end)) { el.className = "behind"; el.textContent = `${fmt(state.elapsed - toSec(p.end))} over this part`; }
+    else { el.className = ""; el.textContent = "on time"; }
+  }
+}
+setInterval(() => frame(performance.now()), 30);
+
+// ---- controls
+function setPlaying(on) {
+  state.playing = on; state.pos = scroller.scrollTop; last = null;
+  document.body.classList.toggle("playing", on);
+  $("play").textContent = on ? "⏸ Pause" : "▶ Play";
+}
+function setWpm(v) { state.wpm = Math.max(80, Math.min(220, v)); $("wpm").textContent = `${state.wpm} wpm`; store.set("wpm", state.wpm); }
+function setSize(v) { state.size = Math.max(24, Math.min(96, v)); document.documentElement.style.setProperty("--size", state.size + "px"); store.set("size", state.size); }
+function jumpTo(el) { const y = el.offsetTop - lineY(); scroller.scrollTop = y; state.pos = scroller.scrollTop; }
+function jumpPart(delta) {
+  const cur = +currentNode().dataset.part;
+  const target = nodes.find((x) => x.dataset.kind === "part" && +x.dataset.part === cur + delta);
+  if (target) jumpTo(target);
+}
+$("play").onclick = () => setPlaying(!state.playing);
+$("slower").onclick = () => setWpm(state.wpm - 5);
+$("faster").onclick = () => setWpm(state.wpm + 5);
+$("smaller").onclick = () => setSize(state.size - 4);
+$("bigger").onclick = () => setSize(state.size + 4);
+$("prev").onclick = () => jumpPart(-1);
+$("next").onclick = () => jumpPart(1);
+$("cues").onclick = () => document.body.classList.toggle("nocues");
+$("mirror").onclick = () => document.body.classList.toggle("mirror");
+$("restart").onclick = () => { setPlaying(false); state.elapsed = 0; scroller.scrollTop = 0; state.pos = 0; };
+script.addEventListener("click", (e) => { const p = e.target.closest(".say"); if (p) jumpTo(p); });
+scroller.addEventListener("wheel", () => { state.pos = scroller.scrollTop; }, { passive: true });
+scroller.addEventListener("scroll", () => { if (!state.playing) state.pos = scroller.scrollTop; });
+document.addEventListener("keydown", (e) => {
+  const k = e.key;
+  if (k === " ") { e.preventDefault(); setPlaying(!state.playing); }
+  else if (k === "ArrowUp") { e.preventDefault(); setWpm(state.wpm + 5); }
+  else if (k === "ArrowDown") { e.preventDefault(); setWpm(state.wpm - 5); }
+  else if (k === "+" || k === "=") setSize(state.size + 4);
+  else if (k === "-" || k === "_") setSize(state.size - 4);
+  else if (k === "ArrowRight" || k === "PageDown") jumpPart(1);
+  else if (k === "ArrowLeft" || k === "PageUp") jumpPart(-1);
+  else if (k === "c" || k === "C") document.body.classList.toggle("nocues");
+  else if (k === "m" || k === "M") document.body.classList.toggle("mirror");
+  else if (k === "r" || k === "R") $("restart").click();
+  else if (k === "f" || k === "F") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+let idle; document.addEventListener("mousemove", () => { document.body.classList.remove("idle"); clearTimeout(idle); idle = setTimeout(() => document.body.classList.add("idle"), 2000); });
+setWpm(state.wpm); setSize(state.size);
+</script>
+</body>
+</html>

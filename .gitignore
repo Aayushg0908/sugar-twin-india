@@ -18,3 +18,11 @@ Thumbs.db
 
 # Training console logs (numbers are in metrics.json)
 results/*.log
+
+# Practice-guide recordings (large; regenerate with docs/video/record_practice_guide.cjs)
+docs/video/*.webm
+docs/video/snap_*.png
+docs/video/record.log
+docs/video/slides/
+docs/video/final_frames/
+docs/video/final_timeline.json
